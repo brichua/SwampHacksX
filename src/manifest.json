@@ -1,10 +1,15 @@
 {
-    "manifest_version": 3,
+    "manifest_version": 2,
     "name": "Collaborator",
     "version": "1.0.0",
     "description": "A basic example extension with only required keys",
     "action": {
         "default_popup": "extension.html"
-      }
+      },
+    "background":{
+        "service_worker": "firebase.js"
+        
+    }
+    
     
   }
