@@ -54,6 +54,7 @@
   <div class="container">
     <h1 class="title">Student Hub</h1>
     <button class="button" onclick="openJoinModal()">Join New Project</button>
+    <button class="button" id="createProject" onclick="openCreateGroupModal()">Create Project</button>
     <div class="project-groups-list" id="projectGroupsList">
         <h2>Project Groups</h2>
         <!-- Project Groups will be dynamically added here -->
@@ -70,6 +71,18 @@
         <input type="text" id="groupCode" placeholder="Enter group code" required>
       </div>
       <button class="button" onclick="joinGroup()">Join Group</button>
+    </div>
+  </div>
+
+  <div class="modal" id="createGroupModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeCreateGroupModal()">×</span>
+      <h2>Create a New Project Group</h2>
+      <div class="form-group">
+        <label for="groupName">Group Name</label>
+        <input type="text" id="groupName" placeholder="Enter group name" required>
+      </div>
+      <button class="button" onclick="createStudentProjectGroup()">Create Group</button>
     </div>
   </div>
   

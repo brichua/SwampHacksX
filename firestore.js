@@ -260,6 +260,10 @@ function getRandomColor() {
       if (role === "teacher") {
         loadClasses();
         loadClassData();
+        loadProjectData();
+        loadGroupMembers();
+        loadTasks();
+        loadResources();
         await loadProjectGroups();
       }else if(role == "student"){
         loadStudentProjectGroups();
@@ -321,7 +325,7 @@ function getRandomColor() {
           <p>Members: ${groupData.members.join(', ')}</p>
         `;
         groupItem.onclick = () => {
-          window.location.href = `project_group.html?groupId=${doc.id}`; // Redirect to specific group page
+          window.location.href = `project.html?groupId=${doc.id}`; // Redirect to specific group page
         };
         groupsList.appendChild(groupItem);
       });
@@ -369,29 +373,103 @@ function getRandomColor() {
   // Create a new Project Group
   async function createProjectGroup() {
     const groupName = document.getElementById('groupName').value.trim();
-    const classCode = document.getElementById('classCode').value.trim(); // Assuming you have classCode as an input field
-    const className = document.getElementById('className').value.trim(); // Assuming you now have an input field for class name
-    
-    if (!groupName || !classCode || !className) {
-      alert('Please enter a group name, class code, and class name.');
+    const classCode = document.getElementById('classCode').value.trim();
+    const className = document.getElementById('className').value.trim();
+  
+    if (!groupName || (!classCode || !className)) {
+      alert('Please enter all required information.');
       return;
     }
   
     try {
-      const groupCode = generateGroupCode();  // Generate unique project group code
+      const userId = firebase.auth().currentUser.uid;
+  
+      // Get the user data to determine if the user is a teacher or student
+      const userDoc = await firebase.firestore().collection('Users').doc(userId).get();
+      const userData = userDoc.data();
+      const userRole = userData.role;  // Assuming 'role' field exists and is either 'teacher' or 'student'
+  
+      // Set the createdBy value based on the user's role
+      const createdBy = userRole === 'teacher' ? 'teacher' : 'student';
+  
+      const groupCode = generateGroupCode(); // Generate unique project group code
   
       await db.collection('project_groups').add({
         name: groupName,
-        classCode: classCode,
-        className: className,  // Added className to the database
-        members: [],           // Members can be added later
-        code: groupCode,       // Store the generated code
-        announcements: [],     // Optionally, initialize an empty array for announcements
-        tasks: []              // Optionally, initialize an empty array for tasks
+        classCode: userRole === 'student' ? null : classCode,  // Students may not need a class code
+        className: userRole === 'student' ? null : className,
+        members: [userId],  // Initialize with the creator as a member
+        createdBy: createdBy,  // Mark the project as created by either 'teacher' or 'student'
+        code: groupCode,
+        announcements: [],
+        tasks: [],
       });
   
-      alert('Project Group created successfully!');
-      loadProjectGroups();  // Reload the list of project groups
+      alert('Project created successfully!');
+      if (userRole === 'student') {
+        loadStudentProjectGroups(); // Reload the student's projects
+      } else {
+        loadProjectGroups(); // Reload teacher projects
+      }
+      closeCreateGroupModal();
+    } catch (error) {
+      console.error('Error creating project group:', error);
+      alert('Error creating project group.');
+    }
+  }
+
+  async function createStudentProjectGroup() {
+    const groupName = document.getElementById('groupName').value.trim();
+  
+    // Students only need a group name and class code
+    if (!groupName) {
+      alert('Please enter all required information.');
+      return;
+    }
+  
+    try {
+      const userId = firebase.auth().currentUser.uid;
+  
+      // Get the user data to determine if the user is a student
+      const userDoc = await firebase.firestore().collection('Users').doc(userId).get();
+      const userData = userDoc.data();
+      const userRole = userData.role;  // Assuming 'role' field exists and is either 'teacher' or 'student'
+  
+      // Ensure the user is a student
+      if (userRole !== 'student') {
+        alert('Only students can create projects.');
+        return;
+      }
+  
+      const userName = `${userData.firstName} ${userData.lastName}`; // Combine first and last name
+  
+      const groupCode = generateGroupCode(); // Generate unique project group code
+  
+      // Create the project group
+      const projectGroupRef = await db.collection('project_groups').add({
+        name: groupName,
+        members: [userName],  // Initialize with the creator's name
+        createdBy: 'student',  // Mark the project as created by a student
+        code: groupCode,
+        tasks: [],
+        resources: [],
+      });
+  
+      // Update the student's projectGroups with the new project ID
+      const userRef = firebase.firestore().collection('Users').doc(userId);
+      const userDocSnapshot = await userRef.get();
+      const userProjectGroups = userDocSnapshot.data().projectGroups || [];
+  
+      // Add the new project ID to the student's projectGroups if not already included
+      if (!userProjectGroups.includes(projectGroupRef.id)) {
+        userProjectGroups.push(projectGroupRef.id);
+        await userRef.update({
+          projectGroups: userProjectGroups
+        });
+      }
+  
+      alert('Project created successfully!');
+      loadStudentProjectGroups(); // Reload the student's projects
       closeCreateGroupModal();
     } catch (error) {
       console.error('Error creating project group:', error);
@@ -399,37 +477,8 @@ function getRandomColor() {
     }
   }
   
-  // Make an Announcement
-  async function makeAnnouncement() {
-    const announcementMessage = document.getElementById('announcementMessage').value.trim();
-    if (!announcementMessage) {
-      alert('Please enter an announcement message.');
-      return;
-    }
-
-    try {
-      const groups = await db.collection('project_groups').where('classCode', '==', classCode).get();
-      groups.forEach(async (groupDoc) => {
-        await db.collection('project_groups').doc(groupDoc.id).update({
-          announcements: firebase.firestore.FieldValue.arrayUnion({
-            message: announcementMessage,
-            date: new Date(),
-          }),
-        });
-      });
-
-      alert('Announcement sent to all project groups!');
-      closeAnnouncementModal();
-    } catch (error) {
-      console.error('Error making announcement:', error);
-      alert('Error making announcement.');
-    }
-  }
-
-  function generateGroupCode() {
-    return Math.random().toString(36).substr(2, 8).toUpperCase(); // Generate an 8-character code
-  }
-
+  
+  
   // Function to join a project group
   async function joinGroup() {
     try {
@@ -506,6 +555,38 @@ function getRandomColor() {
       alert('An error occurred while joining the group. Please try again.');
     }
   }
+
+  // Make an Announcement
+  async function makeAnnouncement() {
+    const announcementMessage = document.getElementById('announcementMessage').value.trim();
+    if (!announcementMessage) {
+      alert('Please enter an announcement message.');
+      return;
+    }
+
+    try {
+      const groups = await db.collection('project_groups').where('classCode', '==', classCode).get();
+      groups.forEach(async (groupDoc) => {
+        await db.collection('project_groups').doc(groupDoc.id).update({
+          announcements: firebase.firestore.FieldValue.arrayUnion({
+            message: announcementMessage,
+            date: new Date(),
+          }),
+        });
+      });
+
+      alert('Announcement sent to all project groups!');
+      closeAnnouncementModal();
+    } catch (error) {
+      console.error('Error making announcement:', error);
+      alert('Error making announcement.');
+    }
+  }
+
+  function generateGroupCode() {
+    return Math.random().toString(36).substr(2, 8).toUpperCase(); // Generate an 8-character code
+  }
+
   
   // Modal functions
   function openJoinModal() {
@@ -521,33 +602,106 @@ function getRandomColor() {
 
   async function loadProjectData() {
     try {
+      const groupId = new URLSearchParams(window.location.search).get('groupId');
+  
       // Check if groupId is valid
       if (!groupId) {
         console.error('Error: Group ID is missing or invalid.');
         return;
       }
   
+      // Fetch project group data from Firestore
       const groupDoc = await firebase.firestore().collection('project_groups').doc(groupId).get();
+  
+      if (!groupDoc.exists) {
+        console.error('Error: Project group not found.');
+        return;
+      }
+  
       const groupData = groupDoc.data();
   
-      // Set class name
-      const className = groupData.className;
-      document.getElementById('className').textContent = className;
+      // Set project group name
+      const projectGroupName = groupData.name || 'Unnamed Project Group';
+      document.getElementById('projectGroupName').textContent = projectGroupName;
   
-      // Display announcements
-      const announcements = groupData.announcements || [];
+      // Set class name, hide class section if project was created by a student
+      const className = groupData.className;
+      if (className) {
+        document.getElementById('className').textContent = className;
+      } else {
+        // Hide class section if no class name
+        document.getElementById('className').parentElement.style.display = 'none';
+      }
+  
+      // Display announcements only if project was created by a teacher
       const announcementsDiv = document.getElementById('announcements');
-      announcementsDiv.innerHTML = announcements.length > 0 ? announcements.join('<br><br>') : 'No announcements available.';
+      if (!className) {
+        // Hide the announcements section if the project was created by a student
+        announcementsDiv.parentElement.style.display = 'none';
+      } else {
+        const announcements = groupData.announcements || [];
+        
+        // Check if there are any announcements and format them properly
+        if (announcements.length > 0) {
+          announcementsDiv.innerHTML = announcements.map(announcement => {
+            // Format the announcement by extracting the message and date
+            const date = announcement.date ? new Date(announcement.date.seconds * 1000) : new Date();
+            return `${announcement.message} (Posted on: ${date.toLocaleString()})`;
+          }).join('<br><br>');
+        } else {
+          announcementsDiv.innerHTML = 'No announcements available.';
+        }
+      }
+      
   
       // Display members
       const membersList = document.getElementById('membersList');
       membersList.innerHTML = '';
-      groupData.members.forEach(memberId => {
+      (groupData.members || []).forEach(memberName => {
         const memberItem = document.createElement('li');
         memberItem.classList.add('member-item');
-        memberItem.textContent = memberId;
+        memberItem.textContent = memberName;
         membersList.appendChild(memberItem);
       });
+  
+      // Hide the Peer Review section if the project was created by a student (no class name)
+      const peerReviewSection = document.getElementById('peerReviewList').parentElement;
+      if (!className) {
+        peerReviewSection.style.display = 'none'; // Hide peer review section
+      }
+
+      if (role === 'teacher') {
+        const feedbackList = groupData.peerReviews || [];
+        const peerReviewListDiv = document.getElementById('peerReviewList');
+        
+        peerReviewListDiv.innerHTML = '';
+        
+        // Fetch and display feedback
+        for (const feedback of feedbackList) {
+          const reviewerId = feedback.submittedBy;
+          
+          // Fetch the reviewer (student) details
+          const reviewerDoc = await firebase.firestore().collection('Users').doc(reviewerId).get();
+          const reviewerData = reviewerDoc.data();
+          
+          const reviewerName = `${reviewerData.firstName} ${reviewerData.lastName}`;
+          
+          // Create a list item for each feedback
+          const feedbackItem = document.createElement('li');
+          feedbackItem.classList.add('feedback-item');
+          feedbackItem.textContent = `Feedback: ${feedback.feedback} (Submitted by: ${reviewerName})`;
+          peerReviewListDiv.appendChild(feedbackItem);
+        }
+      } else {
+        // Hide the peer review section for students
+        document.getElementById('peerReviewSection').style.display = 'none';
+      }
+
+      if (role === 'teacher') {
+        document.getElementById('openTaskModal').style.display = 'none';
+        document.getElementById('openResourceModal').style.display = 'none';
+        document.getElementById('openReviewModal').style.display = 'none';
+      }
   
     } catch (error) {
       console.error('Error loading project data:', error);
@@ -743,7 +897,6 @@ function updateProgressBar() {
     }
   }
   
-  
   // Function to load and display resources
   async function loadResources() {
     const groupId = new URLSearchParams(window.location.search).get('groupId');
@@ -770,7 +923,6 @@ function updateProgressBar() {
     }
   }
   
-  
   // Event listener for the resource form submission
   document.getElementById('resourceForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -795,7 +947,67 @@ function updateProgressBar() {
       alert('Failed to add resource. Please try again.');
     }
   });
-  
-  
 
+  function goBack() {
+    const userId = firebase.auth().currentUser.uid;
+  
+    // Get the user data to determine if the user is a teacher or student
+    firebase.firestore().collection('Users').doc(userId).get()
+      .then(userDoc => {
+        const userData = userDoc.data();
+        const userRole = userData.role;  // Assuming 'role' field exists and is either 'teacher' or 'student'
+  
+        if (userRole === 'student') {
+          // Redirect to student hub
+          window.location.href = 'student.html'; // Replace with actual URL for student hub
+        } else if (userRole === 'teacher') {
+          // Redirect to teacher hub
+          window.location.href = 'teacher.html'; // Replace with actual URL for teacher hub
+        } else {
+          console.error('Error: Unknown user role.');
+        }
+      })
+      .catch(error => {
+        console.error('Error retrieving user data:', error);
+      });
+  }
+  
+  document.getElementById('reviewForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    
+    const feedbackText = document.getElementById('feedback').value.trim();
+    const userId = firebase.auth().currentUser.uid;
+    
+    if (!feedbackText) {
+      alert('Please provide feedback.');
+      return;
+    }
+    
+    try {
+      const groupId = new URLSearchParams(window.location.search).get('groupId');
+      
+      // Ensure the groupId exists
+      if (!groupId) {
+        console.error('Error: Group ID is missing or invalid.');
+        return;
+      }
+  
+      // Store feedback in the 'feedback' field of the project group
+      const feedbackData = {
+        feedback: feedbackText,
+        submittedBy: userId,
+        submittedAt: new Date(),
+      };
+      
+      await firebase.firestore().collection('project_groups').doc(groupId).update({
+        peerReviews: firebase.firestore.FieldValue.arrayUnion(feedbackData)
+      });
+  
+      alert('Feedback submitted successfully!');
+      closeModal('reviewModal');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('Error submitting feedback.');
+    }
+  });
   
