@@ -853,11 +853,32 @@ function updateProgressBar() {
   
           // Update progress bar
           updateProgressBar();
+          const alertList = document.getElementById('alertList');
+          const alertItem = document.createElement('div');
+          alertItem.classList.add('alert');
+          
+          alertItem.classList.add('alert-dismissible');
+          if (task.completed){
+          alertItem.classList.add('alert-success');
+          alertItem.innerHTML = `
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>${task.assignedTo.join(', ') || 'No one'} completed ${task.taskName} </strong>
+          `;
+          }else{
+            alertItem.classList.add('alert-warning');
+            alertItem.innerHTML = `
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>${task.assignedTo.join(', ') || 'No one'} uncompleted ${task.taskName} </strong>
+          `;
+          }
+          alertList.appendChild(alertItem);
+      
         });
       });
   
       // Update progress bar after loading tasks
       updateProgressBar();
+      
   
     } catch (error) {
       console.error('Error loading tasks:', error);
