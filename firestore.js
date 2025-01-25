@@ -269,7 +269,6 @@ function getRandomColor() {
         loadResources();
       }
     } else {
-      window.location.href = 'login.html';
     }
   });
 
