@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+
+        .split-screen {
+            display: flex;
+            height: 100vh;
+        }
+
+        .left {
+            flex: 1;
+            background-color: #075697;
+        }
+
+        .left-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: #FFF;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .close-link {
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: #000;
+        }
+
+        .login-title{
+            font-family: 'Roboto', sans-serif;
+            font-size: 3rem;
+            color: #075697;
+            text-align:center;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .rounded-input {
+            border-radius: 5px;
+            border-bottom-left-radius: 0px;
+            border-top-left-radius: 0px;
+            border-color: #075697;
+            border-style: solid;
+            width: 78%;
+        }
+
+        .rounded-input:focus {
+            border-color: #075697;
+            background-color: B7B7A4;
+        }
+
+        .login-btn {
+            background-color: #ffb77c;
+            border-color: #075697;
+            color: #075697;
+            border-radius: 10px;
+            height: 2.5rem;
+            border-style: solid;
+        }
+
+        .login-btn:hover {
+            background-color: #6e96b7;
+        }
+
+        .btn-outline-secondary {
+            border-color: #FF6F61;
+            color: #FF6F61;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #FF6F61;
+            color: #FFF;
+            border-color: #FF6F61;
+        }
+
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+        }
+
+        .social-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .material-symbols-outlined {
+            color: black;
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .link-click {
+            color: #6e96b7;
+        }
+
+        .link-click:hover {
+            text-decoration: none;
+            color: #075697;
+        }
+
+        .input-header{
+            color: #075697;
+        }
+
+        span.icon{
+            background-color: #ffb77c;
+            border-color: #075697;
+            color: #075697;
+            border: solid 2px;
+            width:100%;
+        }
+
+
+    </style>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body>
+    <div class="split-screen">
+        <div class="left">
+        </div>
+        <div class="right">
+            <div class="close-btn">
+                <a href="index.html" class="material-symbols-outlined">close</a>
+            </div>
+            <div class="box">
+            <div class="login-title">Login</div><br>
+            <div class="card">
+                <div class="card-body">
+                        <div class="input-header">Email</div>
+                        <div class="form-group input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text icon">
+                                    <span class="material-symbols-outlined">email</span>
+                                </span>
+                            </div>
+                            <input type="email" class="rounded-input" id="login-email" placeholder="Enter email">
+                        </div>
+                        <div class="input-header">Password</div>
+                        <div class="form-group input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text icon">
+                                    <span class="material-symbols-outlined" id="toggle-password">visibility</span>
+                                </span>
+                            </div>
+                            <input type="password" class="rounded-input" id="login-password" placeholder="Password">
+                        </div>
+                        <input type="checkbox" id="remember-me"> Remember Me
+                    <div class="text-center mt-3">
+                        <a href="signup.html" class="link-click">Forgot Password?</a>
+                    </div>
+                    <div><br></div>
+                        <button onclick="login()" class="login-btn btn-block">Log In</button>
+                    <div class="text-center mt-2">
+                        <span class = "input-header">Don't have an account? <a href="signup.html" class="link-click">Sign Up</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firestore.js"></script>
+
+    <script>
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('login-password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
+    </script>
+</body>
+</html>

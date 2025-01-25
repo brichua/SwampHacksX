@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Page</title>
+  <style>
+    /* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f8f8;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.class-code-container {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #777;
+}
+
+/* Button Styles */
+.button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+/* Project Groups List Container */
+.project-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project-group {
+  background-color: #f5f5f5;  /* Same as class container background */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.project-group:hover {
+  background-color: #e0e0e0;  /* Lighter shade for hover effect */
+  transform: translateY(-5px);
+}
+
+/* Modal Styles (Same as previous) */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.close-btn {
+  font-size: 1.5rem;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+
+    /* Class Code Visibility and Hover Effect */
+    .class-code-container {
+      display: inline-block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .group-code {
+      padding: 5px;
+      border-radius: 4px;
+      background-color: #fffffff5;
+    }
+
+
+    /* Modal styles */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 400px; }
+    .close-btn { float: right; cursor: pointer; font-size: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; }
+    .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title" id="className"></h1>
+    <div class="class-code-container" id="classCode"></div>
+    <br><br>
+    <button class="button" onclick="openCreateGroupModal()">Create New Project Group</button>
+    <button class="button" onclick="openAnnouncementModal()">Make an Announcement</button>
+    
+    <div class="project-groups-list" id="projectGroupsList">
+      <h2>Project Groups</h2>
+      <!-- Project Groups will be dynamically added here -->
+    </div>
+  </div>
+
+  <!-- Modal for creating project group -->
+  <div class="modal" id="createGroupModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeCreateGroupModal()">×</span>
+      <h2>Create a New Project Group</h2>
+      <div class="form-group">
+        <label for="groupName">Group Name</label>
+        <input type="text" id="groupName" placeholder="Enter group name" required>
+      </div>
+      <button class="button" onclick="createProjectGroup()">Create Group</button>
+    </div>
+  </div>
+
+  <!-- Modal for making an announcement -->
+  <div class="modal" id="announcementModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeAnnouncementModal()">×</span>
+      <h2>Make an Announcement</h2>
+      <div class="form-group">
+        <label for="announcementMessage">Announcement Message</label>
+        <textarea id="announcementMessage" placeholder="Enter your announcement" required></textarea>
+      </div>
+      <button class="button" onclick="makeAnnouncement()">Make Announcement</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="firestore.js"></script>

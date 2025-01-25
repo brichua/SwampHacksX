@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Hub</title>
+  <style>
+    /* General styles */
+    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; }
+    .container { max-width: 800px; margin: 50px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+    .title { font-size: 24px; text-align: center; margin-bottom: 20px; }
+    .button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+    .button:hover { background: #0056b3; }
+    .group-list { margin-top: 20px; }
+    .group-item { display: flex; align-items: center; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; background: #f1f1f1; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease; }
+    .group-item:hover { background-color: #e1e1e1; }
+    .group-image { width: 100px; height: 100px; border-radius: 4px; margin-right: 20px; position: relative; }
+    .group-info { display: flex; flex-direction: column; }
+    
+    /* Random color background for image placeholder */
+    .random-color { background-color: #ccc; }
+
+    /* Modal styles */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 400px; }
+    .close-btn { float: right; cursor: pointer; font-size: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; }
+    .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+  
+    /* Project Groups List Container */
+.project-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project-group {
+  background-color: #f5f5f5;  /* Same as class container background */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.project-group:hover {
+  background-color: #e0e0e0;  /* Lighter shade for hover effect */
+  transform: translateY(-5px);
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Student Hub</h1>
+    <button class="button" onclick="openJoinModal()">Join New Project</button>
+    <div class="project-groups-list" id="projectGroupsList">
+        <h2>Project Groups</h2>
+        <!-- Project Groups will be dynamically added here -->
+      </div>
+  </div>
+
+  <!-- Modal for joining project group -->
+  <div class="modal" id="joinModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeJoinModal()">×</span>
+      <h2>Join a Project Group</h2>
+      <div class="form-group">
+        <label for="groupCode">Group Code</label>
+        <input type="text" id="groupCode" placeholder="Enter group code" required>
+      </div>
+      <button class="button" onclick="joinGroup()">Join Group</button>
+    </div>
+  </div>
+  
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="firestore.js"></script>
+</body>
+</html>
