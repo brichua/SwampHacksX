@@ -19,8 +19,12 @@
         </div>
       
       <div id="Tasks" class="tab">
-        <h2>Tasks</h2>
-        <button class = "w3-button" id = "taskFormBtn">Create Task</button>
+        
+            <h2>Tasks</h2>
+            <div class = "w3-show-inline-block"></div>
+                <button class="w3-button w3-green" id = "projectSwitch">Switch Project</button>
+                <button class="w3-button w3-teal" id = "taskFormBtn" >New Task</button>
+            </div>
         <div class="w3-card-4" id = "taskForm" style = "display:none">
 
             <header class="w3-container w3-blue">
@@ -50,6 +54,29 @@
             
             </div>
         <h3>Upcoming Tasks</h3>
+        <div class = "w3-container">
+            <ul class="w3-ul w3-card-4">
+                <li class="w3-bar">
+                  <span class="w3-bar-item w3-button w3-white w3-xlarge w3-right">x</span>
+                  <!--img src="img_avatar2.png" class="w3-bar-item w3-circle w3-hide-small" style="width:85px"-->
+                  <div class="w3-bar-item">
+                    <span class="w3-large">Task Name</span><br>
+                    <span class = "assignmentText">Assigned to:</span><br>
+                    <span class="dueDate">Due in...</span>
+                  </div>
+                </li>
+
+                <li class="w3-bar">
+                    <span class="w3-bar-item w3-button w3-white w3-xlarge w3-right">x</span>
+                    <!--img src="img_avatar2.png" class="w3-bar-item w3-circle w3-hide-small" style="width:85px"-->
+                    <div class="w3-bar-item">
+                      <span class="w3-large">Task Name 2</span><br>
+                      <span class = "assignmentText">Assigned to:</span><br>
+                      <span class="dueDate">Due in...</span>
+                    </div>
+                  </li>
+            </ul>
+        </div>
         <h3>Completed Tasks</h3>
       </div>
       
