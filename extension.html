@@ -1,0 +1,97 @@
+<html>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <head>
+    <style>
+        html{
+            min-height: 750px;
+            min-width: 500px;
+        }
+    </style>
+  </head>
+
+    <body>
+        <h1>Group Organizer</h1>
+        
+        <div class="w3-bar w3-black">
+            <button class="w3-bar-item w3-button tabBtn" id = "taskBtn">Tasks</button>
+            <button class="w3-bar-item w3-button tabBtn" id = "scheduleBtn">Scheduling</button>
+            <button class="w3-bar-item w3-button tabBtn">Progress</button>
+        </div>
+      
+      <div id="Tasks" class="tab">
+        
+            <h2>Tasks</h2>
+            <div class = "w3-show-inline-block"></div>
+                <button class="w3-button w3-green" id = "projectSwitch">Switch Project</button>
+                <button class="w3-button w3-teal" id = "taskFormBtn" >New Task</button>
+            </div>
+        <div class="w3-card-4" id = "taskForm" style = "display:none">
+
+            <header class="w3-container w3-blue">
+              <h1>Task Creator</h1>
+            </header>
+            
+            <div class="w3-container">
+                <form>
+                    <label for="taskTitle">Task Name:</label><br>
+                    <input type="text" id="taskTitle" name="taskTitle"><br>
+                    <h5>Assign to:</h5>
+                    <input type="checkbox" id="person1" name="person1" >
+                    <label for="person1"> Person 1</label><br>
+                    <input type="checkbox" id="person2" name="person2" >
+                    <label for="person2"> Person 2</label><br>
+                    <input type="checkbox" id="person3" name="person3" >
+                    <label for="person3"> Person 3</label><br>
+                    <label for="taskdate">Task Due Date (date and time):</label>
+                    <input type="datetime-local" id="taskdate" name="taskdate">
+                  </form>
+            </div>
+            
+            <footer class="w3-container w3-blue">
+                <button class="w3-button w3-green">Create Task</button>
+                <button class="w3-button w3-red" id = "cancelTask">Cancel</button>
+            </footer>
+            
+            </div>
+        <h3>Upcoming Tasks</h3>
+        <div class = "w3-container">
+            <ul class="w3-ul w3-card-4">
+                <li class="w3-bar">
+                  <span class="w3-bar-item w3-button w3-white w3-xlarge w3-right">x</span>
+                  <!--img src="img_avatar2.png" class="w3-bar-item w3-circle w3-hide-small" style="width:85px"-->
+                  <div class="w3-bar-item">
+                    <span class="w3-large">Task Name</span><br>
+                    <span class = "assignmentText">Assigned to:</span><br>
+                    <span class="dueDate">Due in...</span>
+                  </div>
+                </li>
+
+                <li class="w3-bar">
+                    <span class="w3-bar-item w3-button w3-white w3-xlarge w3-right">x</span>
+                    <!--img src="img_avatar2.png" class="w3-bar-item w3-circle w3-hide-small" style="width:85px"-->
+                    <div class="w3-bar-item">
+                      <span class="w3-large">Task Name 2</span><br>
+                      <span class = "assignmentText">Assigned to:</span><br>
+                      <span class="dueDate">Due in...</span>
+                    </div>
+                  </li>
+            </ul>
+        </div>
+        <h3>Completed Tasks</h3>
+      </div>
+      
+      <div id="Scheduling" class="tab" style="display:none">
+        <h2>Scheduling</h2>
+        <button>Meeting Time Poll</button>
+        <h3>Upcoming Meetings</h3>
+      </div>
+      
+      <div id="Progress" class="tab" style="display:none">
+        <h2>Progress</h2>
+        <h3>Group Progress</h3>
+        <h3>Individual Progress</h3>
+      </div>
+  
+    </body>
+    <script src="extension.js"></script>
+</html>
