@@ -1292,7 +1292,10 @@ function getRandomColor() {
   });
   
   
-  
+document.getElementById('confetti-button').addEventListener("click", ()=>{
+  fireConfetti();
+
+});
 
 
 function fireConfetti(){
