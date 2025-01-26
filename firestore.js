@@ -977,7 +977,7 @@ function getRandomColor() {
                 memberCard.querySelector('p:nth-child(5)').textContent = `Total Hours: ${totalHours}`;
                 const progressCircle = memberCard.querySelector('.progress-circle circle:nth-child(2)');
                 progressCircle.setAttribute('stroke-dasharray', `${progressPercent * 2.83}, 283`);
-                memberCard.querySelector('.progress-circle span').textContent = `${Math.round(progressPercent)}%`;
+                memberCard.querySelector('.progress-circle text').textContent = `${Math.round(progressPercent)}%`;
               }
           }
         }
@@ -1430,24 +1430,26 @@ function fireConfetti(){
             memberCard.dataset.memberId = memberId; // Attach memberId for updates
   
             memberCard.innerHTML = `
-              <h4>${memberName}</h4>
-              <p><strong>Total Tasks:</strong> ${totalTasks}</p>
-              <p><strong>Tasks Completed:</strong> ${tasksCompleted}</p>
-              <p><strong>Tasks In Progress:</strong> ${tasksInProgress}</p>
-              <p>Total Hours:</strong> ${totalHours}</p>
-              
-              <div class="progress-circle">
-                <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="50" cy="50" r="45" stroke="#eee" stroke-width="5" fill="none"></circle>
-                  <circle cx="50" cy="50" r="45" stroke="green" stroke-width="5" fill="none" 
-                          stroke-dasharray="${progressPercent * 2.83}, 283" 
-                          stroke-linecap="round"></circle>
-                </svg>
-                <span>${Math.round(progressPercent)}%</span>
-              </div>
-              
-              <p><strong>Next Deadline:</strong> ${nextDeadline}</p>
-            `;
+  <h4>${memberName}</h4>
+  <p><strong>Total Tasks:</strong> ${totalTasks}</p>
+  <p><strong>Tasks Completed:</strong> ${tasksCompleted}</p>
+  <p><strong>Tasks In Progress:</strong> ${tasksInProgress}</p>
+  <p><strong>Total Hours:</strong> ${totalHours}</p>
+  
+  <div class="progress-circle">
+    <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="45" stroke="#fbeaba" stroke-width="10" fill="none"></circle>
+      <circle cx="50" cy="50" r="45" stroke="#fbeaba" stroke-width="10" fill="none" 
+              stroke-dasharray="${progressPercent * 2.83}, 283" 
+              stroke-linecap="round"></circle>
+      <text x="50%" y="50%" alignment-baseline="middle" text-anchor="middle" font-size="16" fill="black">
+        ${Math.round(progressPercent)}%
+      </text>
+    </svg>
+  </div>
+  
+  <p><strong>Next Deadline:</strong> ${nextDeadline}</p>
+`;
   
             memberListContainer.appendChild(memberCard);
             memberCardsMap.set(memberId, memberCard);
@@ -1586,24 +1588,26 @@ function fireConfetti(){
             memberCard.dataset.memberId = memberId; // Attach memberId for updates
   
             memberCard.innerHTML = `
-              <h4>${memberName}</h4>
-              <p><strong>Total Tasks:</strong> ${totalTasks}</p>
-              <p><strong>Tasks Completed:</strong> ${tasksCompleted}</p>
-              <p><strong>Tasks In Progress:</strong> ${tasksInProgress}</p>
-              <p>Total Hours:</strong> ${totalHours}</p>
-              
-              <div class="progress-circle">
-                <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="50" cy="50" r="45" stroke="#eee" stroke-width="5" fill="none"></circle>
-                  <circle cx="50" cy="50" r="45" stroke="green" stroke-width="5" fill="none" 
-                          stroke-dasharray="${progressPercent * 2.83}, 283" 
-                          stroke-linecap="round"></circle>
-                </svg>
-                <span>${Math.round(progressPercent)}%</span>
-              </div>
-              
-              <p><strong>Next Deadline:</strong> ${nextDeadline}</p>
-            `;
+            <h4>${memberName}</h4>
+            <p><strong>Total Tasks:</strong> ${totalTasks}</p>
+            <p><strong>Tasks Completed:</strong> ${tasksCompleted}</p>
+            <p><strong>Tasks In Progress:</strong> ${tasksInProgress}</p>
+            <p><strong>Total Hours:</strong> ${totalHours}</p>
+            
+            <div class="progress-circle">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" stroke="#fbeaba" stroke-width="10" fill="none"></circle>
+                <circle cx="50" cy="50" r="45" stroke="#f8cc55" stroke-width="10" fill="none" 
+                        stroke-dasharray="${progressPercent * 2.83}, 283" 
+                        stroke-linecap="round"></circle>
+                <text x="50%" y="50%" alignment-baseline="middle" text-anchor="middle" font-size="16" fill="black">
+                  ${Math.round(progressPercent)}%
+                </text>
+              </svg>
+            </div>
+            
+            <p><strong>Next Deadline:</strong> ${nextDeadline}</p>
+          `;
   
             memberListContainer.appendChild(memberCard);
             memberCardsMap.set(memberId, memberCard);
