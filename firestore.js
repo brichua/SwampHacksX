@@ -1149,6 +1149,9 @@ function getRandomColor() {
         const alertItem = document.createElement('div');
         alertItem.classList.add('alert');
         alertItem.classList.add('alert-dismissible');
+        alertItem.classList.add('border');
+        alertItem.classList.add('border-dark');
+        
 
         
         if (groupData.alerts[i].completed){
@@ -1156,7 +1159,7 @@ function getRandomColor() {
           alertItem.classList.add('alert-success');
           alertItem.innerHTML = `
             
-            <strong> ${groupData.alerts[i].message} </strong>
+            <strong class = > ${groupData.alerts[i].message} </strong>
           `;
           }else{
             
@@ -1796,6 +1799,9 @@ const groups = await db.collection('project_groups').where('classCode', '==', cl
   var trace = {
     x: completionStats,
     type: "histogram",
+    marker: {
+      color: '#9dd1cc',
+    },
   };
   var data = [trace];
   var layout = {
@@ -1815,6 +1821,7 @@ const groups = await db.collection('project_groups').where('classCode', '==', cl
         }
 
     },
+    paper_bgcolor: '#faf7ed',
     
   };
   Plotly.newPlot('completionHistogram', data,layout);
@@ -1836,15 +1843,20 @@ async function generatefeedBackChart(){
     var data = [{
       values: [positiveRev, neutralRev, negativeRev],
       labels: ['Positive', 'Neutral', 'Negative'],
-      type: 'pie'
+      type: 'pie',
+      marker: {
+        colors: ['#7595a3','#f8cc55','#fcccb8'],
+      },
     }];
 
     var layout = {
       title: {
         text: 'Student Peer Review Feedback'
-      }
+      },
+      paper_bgcolor: '#faf7ed',
     };
     Plotly.newPlot('reviewPie',data, layout);
+    
 }
 
 async function generateAlertHistogram(){
@@ -1864,6 +1876,9 @@ async function generateAlertHistogram(){
     var trace = {
       x: alertTimes,
       type: "histogram",
+      marker: {
+        color: '#7595a3',
+      },
     };
     var data = [trace];
     var layout = {
@@ -1883,6 +1898,7 @@ async function generateAlertHistogram(){
           }
   
       },
+      paper_bgcolor: '#faf7ed',
       
     };
     Plotly.newPlot('alertHistogram', data,layout);
