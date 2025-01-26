@@ -682,18 +682,18 @@ function getRandomColor() {
         document.getElementById('className').parentElement.style.display = 'none';
       }
   
+      // Set group code
+      const groupCode = groupData.code || 'N/A';  // Assuming you store the group code in Firestore
+      document.getElementById('groupCode').textContent = groupCode;
+  
       // Display announcements only if project was created by a teacher
       const announcementsDiv = document.getElementById('announcements');
       if (!className) {
-        // Hide the announcements section if the project was created by a student
         announcementsDiv.parentElement.style.display = 'none';
       } else {
         const announcements = groupData.announcements || [];
-        
-        // Check if there are any announcements and format them properly
         if (announcements.length > 0) {
           announcementsDiv.innerHTML = announcements.map(announcement => {
-            // Format the announcement by extracting the message and date
             const date = announcement.date ? new Date(announcement.date.seconds * 1000) : new Date();
             return `${announcement.message} (Posted on: ${date.toLocaleString()})`;
           }).join('<br><br>');
@@ -701,7 +701,6 @@ function getRandomColor() {
           announcementsDiv.innerHTML = 'No announcements available.';
         }
       }
-      
   
       // Display members
       const membersList = document.getElementById('membersList');
@@ -713,31 +712,31 @@ function getRandomColor() {
         membersList.appendChild(memberItem);
       });
   
-      // Hide the Peer Review section if the project was created by a student (no class name)
+      // Hide the Peer Review section if the project was created by a student
       const peerReviewSection = document.getElementById('peerReviewList').parentElement;
       if (!className) {
-        peerReviewSection.style.display = 'none'; // Hide peer review section
+        peerReviewSection.style.display = 'none';
       }
-
+  
       if (role === 'teacher') {
         const feedbackList = groupData.peerReviews || [];
         const peerReviewListDiv = document.getElementById('peerReviewList');
-      
+  
         peerReviewListDiv.innerHTML = '';
-      
+  
         // Fetch and display feedback
         for (const feedback of feedbackList) {
           const reviewerId = feedback.submittedBy;
           const recipientId = feedback.recipientID;
-      
+  
           // Fetch the reviewer details
           const reviewerDoc = await firebase.firestore().collection('Users').doc(reviewerId).get();
           const reviewerData = reviewerDoc.data();
-      
+  
           // Fetch the recipient details
           const recipientDoc = await firebase.firestore().collection('Users').doc(recipientId).get();
           const recipientData = recipientDoc.data();
-      
+  
           const reviewerName = feedback.submittedBy || 'General Feedback';
           const feedbackType = feedback.feedbackType || 'General Feedback';
           const recipientName = feedback.reviewedMember || 'General Feedback';
@@ -745,11 +744,11 @@ function getRandomColor() {
           const submittedAt = feedback.submittedAt
             ? new Date(feedback.submittedAt.seconds * 1000).toLocaleString()
             : 'Unknown submission time';
-      
+  
           // Create a feedback card
           const feedbackCard = document.createElement('div');
           feedbackCard.classList.add('feedback-card');
-      
+  
           feedbackCard.innerHTML = `
             <div class="feedback-card-content">
               <h4 class="feedback-title">Feedback on: ${recipientName}</h4>
@@ -759,14 +758,14 @@ function getRandomColor() {
               <p><strong>Submitted at:</strong> ${submittedAt}</p>
             </div>
           `;
-      
+  
           peerReviewListDiv.appendChild(feedbackCard);
         }
       } else {
         // Hide the peer review section for students
         document.getElementById('peerReviewSection').style.display = 'none';
       }
-
+  
       if (role === 'teacher') {
         document.getElementById('openTaskModal').style.display = 'none';
         document.getElementById('openResourceModal').style.display = 'none';
@@ -777,6 +776,7 @@ function getRandomColor() {
       console.error('Error loading project data:', error);
     }
   }
+  
   
   // Handle opening modals
   document.getElementById('openTaskModal').addEventListener('click', () => openModal('taskModal'));
