@@ -35,60 +35,20 @@
   justify-content: space-around;
 }
 
-.member-card {
+.member-card, .resource-card {
   background: #fff;
-  border: 1px solid #ccc;
+  padding: 20px;
   border-radius: 8px;
-  padding: 15px;
-  width: 200px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-.member-card:hover {
+.member-card:hover, .resource-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
-.member-card .name {
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.member-card .progress-wheel {
-  margin-bottom: 10px;
-}
-
-.member-card .task-info {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.member-card .task-info .task-status {
-  font-size: 14px;
-  color: #888;
-}
-
-.member-card .task-info .next-task {
-  font-size: 14px;
-  color: #007bff;
-}
-
-.member-card .task-breakdown {
-  display: none;
-  text-align: left;
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-}
-
-.member-card:hover .task-breakdown {
-  display: block;
-}
 
 /* Style for the resource grid */
 .resource-grid {
@@ -169,22 +129,48 @@
   font-weight: bold;
 }
 
-/* Button styling */
+body {
+  font-family: 'Press Start 2P', sans-serif; /* Retro-inspired font */
+  background: #f9f9f9;
+}
+
 .button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #0077cc;
+  background-color: #0066B3; /* UF blue */
   color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
 }
 
 .button:hover {
-  background-color: #005fa3;
+  background-color: #FF5E00; /* UF orange */
 }
 
+.emoji-button {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
 
+.emoji-button:hover {
+  transform: scale(1.1);
+}
+
+.selected {
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  padding: 5px;
+}
+
+#feedbackNote {
+  font-family: 'Roboto', sans-serif;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  resize: none;
+}
 
   </style>
 </head>
@@ -228,8 +214,10 @@
 </div>
 
     <!-- Task Management Section -->
-    <<div class="section">
-        <h3>Task List</h3>
+    <div class="section">
+        <h3 style="display: inline-block; margin-right: 10px;">Task List</h3>
+        <button class="button" id="openTaskModal" style="display: inline-block;">Add New Task</button>
+      
         
         <!-- Table for task list -->
         <table id="taskTable" class="task-table">
@@ -246,29 +234,29 @@
             <!-- Tasks will be dynamically added here -->
           </tbody>
         </table>
-      
-        <button class="button" id="openTaskModal">Add New Task</button>
       </div>
       
 
     <!-- Resource Section -->
     <div class="section">
-        <h3>Resources and Notes</h3>
-        <div id="resourceList" class="resource-grid">
-          <!-- Resources will be dynamically added here -->
+        <div class="header-with-button">
+            <h3 style="display: inline-block; margin-right: 10px;">Resources and Notes</h3>
+            <button class="button" id="openResourceModal">Add New Resource</button>
         </div>
-      
-        <button class="button" id="openResourceModal">Add New Resource</button>
-      </div>
-
+        <div id="resourceList" class="resource-grid">
+            <!-- Resources will be dynamically added here -->
+        </div>
+    </div>
+    
     <!-- Peer Review Section -->
     <div class="section">
-      <h3>Peer Review (Anonymous Feedback)</h3>
-      <ul id="peerReviewList" class="task-list">
-        <!-- Peer reviews will be dynamically added here -->
-      </ul>
-
-      <button class="button" id="openReviewModal">Add New Feedback</button>
+        <div class="header-with-button">
+            <h3 style="display: inline-block; margin-right: 10px;">Peer Review (Anonymous Feedback)</h3>
+            <button class="button" id="openReviewModal">Add New Feedback</button>
+        </div>
+        <ul id="peerReviewList" class="task-list">
+            <!-- Peer reviews will be dynamically added here -->
+        </ul>
     </div>
   </div>
 
@@ -286,7 +274,7 @@
         
         <input type="date" id="taskDate" required><br><br>
   
-        <label for="taskHours">Task Hours:</label>
+        <label for="taskHours">Task Hours (Estimated):</label>
         <input type="number" id="taskHours" placeholder="Hours" required min="1"><br><br>
   
         <button type="submit" class="button">Add Task</button>
@@ -315,11 +303,30 @@
       <span class="close" onclick="closeModal('reviewModal')">&times;</span>
       <h3>Add Peer Review Feedback</h3>
       <form id="reviewForm">
-        <textarea id="feedback" placeholder="Submit your feedback (anonymous)" required></textarea><br><br>
+        <div id="emojiSelection" style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+          <!-- Emoji Icons for feedback -->
+          <button type="button" class="emoji-button" id="satisfied" onclick="selectFeedback('satisfied')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Google_Chrome_Logo_2021.svg/2560px-Google_Chrome_Logo_2021.svg.png" alt="Satisfied" style="width: 30px;">
+            <span>Satisfied</span>
+          </button>
+          <button type="button" class="emoji-button" id="neutral" onclick="selectFeedback('neutral')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Google_Chrome_logo_2021.svg/2048px-Google_Chrome_logo_2021.svg.png" alt="Neutral" style="width: 30px;">
+            <span>Neutral</span>
+          </button>
+          <button type="button" class="emoji-button" id="dissatisfied" onclick="selectFeedback('dissatisfied')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_Logo_2021.svg/2560px-Google_Chrome_Logo_2021.svg.png" alt="Dissatisfied" style="width: 30px;">
+            <span>Dissatisfied</span>
+          </button>
+        </div>
+        <div>
+          <!-- Textarea to add a note -->
+          <textarea id="feedbackNote" placeholder="Add your note (optional)" style="width: 100%; height: 100px;"></textarea><br><br>
+        </div>
         <button type="submit" class="button">Submit Feedback</button>
       </form>
     </div>
   </div>
+  
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>

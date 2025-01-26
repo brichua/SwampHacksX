@@ -1250,33 +1250,37 @@ function getRandomColor() {
   
   document.getElementById('reviewForm').addEventListener('submit', async function(event) {
     event.preventDefault();
-    
-    const feedbackText = document.getElementById('feedback').value.trim();
+  
+    const feedbackNote = document.getElementById('feedbackNote').value.trim();  // Get the optional note
+    const feedbackType = selectedFeedback;  // Get the selected emoji feedback
     const userId = firebase.auth().currentUser.uid;
-    
-    if (!feedbackText) {
-      alert('Please provide feedback.');
+  
+    // Ensure that feedback type is selected
+    if (!feedbackType) {
+      alert('Please select a feedback option.');
       return;
     }
-    
+  
     try {
       const groupId = new URLSearchParams(window.location.search).get('groupId');
-      
+  
       // Ensure the groupId exists
       if (!groupId) {
         console.error('Error: Group ID is missing or invalid.');
         return;
       }
   
-      // Store feedback in the 'feedback' field of the project group
+      // Prepare feedback data
       const feedbackData = {
-        feedback: feedbackText,
+        feedbackType: feedbackType,  // Store the emoji feedback
+        feedbackNote: feedbackNote,  // Store the optional note
         submittedBy: userId,
         submittedAt: new Date(),
       };
-      
+  
+      // Store feedback in the 'peerReviews' array of the project group
       await firebase.firestore().collection('project_groups').doc(groupId).update({
-        peerReviews: firebase.firestore.FieldValue.arrayUnion(feedbackData)
+        peerReviews: firebase.firestore.FieldValue.arrayUnion(feedbackData),
       });
   
       alert('Feedback submitted successfully!');
@@ -1286,6 +1290,8 @@ function getRandomColor() {
       alert('Error submitting feedback.');
     }
   });
+  
+  
   
 
 
