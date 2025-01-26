@@ -358,41 +358,36 @@ body {
               <span class="close" onclick="closeModal('reviewModal')">&times;</span>
               <h3>Add Peer Review Feedback</h3>
               <form id="reviewForm">
-                <!-- Member Selection Dropdown -->
-                <label for="feedbackRecipient">Select a Member:</label>
-                <select id="feedbackRecipient" required>
-                  <option value="" disabled selected>Select a member</option>
-                  <!-- Dynamically populate these options with member names and IDs -->
-                  <option value="member1-id">Member 1</option>
-                  <option value="member2-id">Member 2</option>
-                  <option value="member3-id">Member 3</option>
-                </select>
-          
-                <!-- Emoji Feedback Selection -->
+                <div style="margin-bottom: 20px;">
+                  <label for="selectMember">Select a Member to Review:</label>
+                  <select id="selectMember" required>
+                    <option value="" disabled selected>Select a member</option>
+                    <!-- Options will be populated dynamically -->
+                  </select>
+                </div>
                 <div id="emojiSelection" style="display: flex; justify-content: space-around; margin-bottom: 20px;">
-                  <button type="button" class="emoji-button" id="satisfied" onclick="selectFeedback('positive')">
-                    <span class="material-icons">sentiment_satisfied_alt</span>
+                  <!-- Emoji Icons for feedback -->
+                  <button type="button" class="emoji-button" id="positive" onclick="selectFeedback('positive')">
+                    <span class="material-icons" style="font-size: 30px; color: green;">sentiment_satisfied_alt</span>
                     <span>Positive</span>
                   </button>
                   <button type="button" class="emoji-button" id="neutral" onclick="selectFeedback('neutral')">
-                    <span class="material-icons">sentiment_neutral</span>
+                    <span class="material-icons" style="font-size: 30px; color: orange;">sentiment_neutral</span>
                     <span>Neutral</span>
                   </button>
-                  <button type="button" class="emoji-button" id="dissatisfied" onclick="selectFeedback('negative')">
-                    <span class="material-icons">sentiment_dissatisfied</span>
+                  <button type="button" class="emoji-button" id="negative" onclick="selectFeedback('negative')">
+                    <span class="material-icons" style="font-size: 30px; color: red;">sentiment_dissatisfied</span>
                     <span>Negative</span>
                   </button>
                 </div>
-          
-                <!-- Feedback Note -->
-                <textarea id="feedbackNote" placeholder="Add your note (optional)" style="width: 100%; height: 100px;"></textarea><br><br>
-          
-                <!-- Submit Button -->
+                <div>
+                  <!-- Textarea to add a note -->
+                  <textarea id="feedbackNote" placeholder="Add your note (optional)" style="width: 100%; height: 100px;"></textarea><br><br>
+                </div>
                 <button type="submit" class="button">Submit Feedback</button>
               </form>
             </div>
           </div>
-          
           
     </div>
     <div class = "col-4">

@@ -1325,7 +1325,6 @@ function getRandomColor() {
         feedbackType,
         feedbackNote,
         submittedBy: {
-          id: submittedBy.uid,
           name: submittedBy.displayName || 'Anonymous',
         },
         reviewedMember: {
