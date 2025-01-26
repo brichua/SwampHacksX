@@ -1149,6 +1149,9 @@ function getRandomColor() {
         const alertItem = document.createElement('div');
         alertItem.classList.add('alert');
         alertItem.classList.add('alert-dismissible');
+        alertItem.classList.add('border');
+        alertItem.classList.add('border-dark');
+        
 
         
         if (groupData.alerts[i].completed){
@@ -1156,7 +1159,7 @@ function getRandomColor() {
           alertItem.classList.add('alert-success');
           alertItem.innerHTML = `
             
-            <strong> ${groupData.alerts[i].message} </strong>
+            <strong class = > ${groupData.alerts[i].message} </strong>
           `;
           }else{
             
