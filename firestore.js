@@ -266,6 +266,7 @@ function getRandomColor() {
         loadTasks();
         loadResources();
         sendAlert();
+        generateMemberCards();
         await loadProjectGroups();
       }else if(role == "student"){
         loadStudentProjectGroups();
@@ -274,6 +275,7 @@ function getRandomColor() {
         loadTasks();
         loadResources();
         sendAlert();
+        generateMemberCards();
       }
     } else {
     }
@@ -342,7 +344,7 @@ function getRandomColor() {
       const userId = firebase.auth().currentUser.uid;
       const userDoc = await firebase.firestore().collection('Users').doc(userId).get();
       const userData = userDoc.data();
-      const projectGroups = userData.projectGroups || []; // Get the list of group IDs the student is in
+      const projectGroups = userData.projectGroups || []; // Get the list of project group maps the student is in
   
       const groupsList = document.getElementById('projectGroupsList');
       groupsList.innerHTML = '<h2>Project Groups</h2>'; // Reset content
@@ -353,10 +355,12 @@ function getRandomColor() {
         return;
       }
   
-      // Query each group by its ID
-      for (const groupId of projectGroups) {
+      // Query each group by its projectId from the projectGroups map
+      for (const group of projectGroups) {
+        const groupId = group.projectId;  // Get the projectId from the map
         const groupDoc = await firebase.firestore().collection('project_groups').doc(groupId).get();
         const groupData = groupDoc.data();
+  
         const groupItem = document.createElement('div');
         groupItem.classList.add('project-group');
         groupItem.innerHTML = `
@@ -372,7 +376,7 @@ function getRandomColor() {
       console.error('Error loading student project groups:', error);
     }
   }
-
+  
   // Create a new Project Group
   async function createProjectGroup() {
     const groupName = document.getElementById('groupName').value.trim();
@@ -445,27 +449,40 @@ function getRandomColor() {
       }
   
       const userName = `${userData.firstName} ${userData.lastName}`; // Combine first and last name
-  
       const groupCode = generateGroupCode(); // Generate unique project group code
   
-      // Create the project group
+      // Create the project group with additional fields for tracking progress
       const projectGroupRef = await db.collection('project_groups').add({
         name: groupName,
-        members: [userName],  // Initialize with the creator's name
+        members: [userName],  // Initialize with the creator's full name
+        memberIDs: [userId],  // Initialize with the creator's userId
         createdBy: 'student',  // Mark the project as created by a student
         code: groupCode,
         tasks: [],
         resources: [],
+        totalHours: 0,
+        totalTasks: 0,
+        tasksCompleted: 0,
+        progressPercent: 0,
+        nextDeadline: null
       });
   
-      // Update the student's projectGroups with the new project ID
+      // Update the student's projectGroups with the new project ID and initialize the map for the group
       const userRef = firebase.firestore().collection('Users').doc(userId);
       const userDocSnapshot = await userRef.get();
       const userProjectGroups = userDocSnapshot.data().projectGroups || [];
   
       // Add the new project ID to the student's projectGroups if not already included
-      if (!userProjectGroups.includes(projectGroupRef.id)) {
-        userProjectGroups.push(projectGroupRef.id);
+      if (!userProjectGroups.some(group => group.projectId === projectGroupRef.id)) {
+        userProjectGroups.push({
+          projectId: projectGroupRef.id,
+          tasks: [],           // Initialize tasks map for the group
+          totalHours: 0,       // Initialize totalHours for the group
+          totalTasks: 0,       // Initialize totalTasks for the group
+          tasksCompleted: 0,   // Initialize tasksCompleted for the group
+          progressPercent: 0,  // Initialize progressPercent for the group
+          nextDeadline: null   // Initialize nextDeadline for the group
+        });
         await userRef.update({
           projectGroups: userProjectGroups
         });
@@ -481,11 +498,8 @@ function getRandomColor() {
   }
   
   
-  
-  // Function to join a project group
   async function joinGroup() {
     try {
-      // Grab the group code entered by the user
       const groupCode = document.getElementById('groupCode').value;
   
       // Validate groupCode before using it
@@ -509,33 +523,37 @@ function getRandomColor() {
         return;
       }
   
-      // Get the first document from the query snapshot
       const groupDoc = groupQuerySnapshot.docs[0];
       const groupData = groupDoc.data();
-      const groupId = groupDoc.id; // Get the document ID
+      const groupId = groupDoc.id;
   
       // Fetch user data (first name and last name) from the users collection
       const userDoc = await firebase.firestore().collection('Users').doc(userId).get();
       const userData = userDoc.data();
-      const fullName = `${userData.firstName} ${userData.lastName}`; // Combine first and last name
+      const fullName = `${userData.firstName} ${userData.lastName}`;
   
-      // Ensure the 'members' field exists, initialize it if not
+      // Ensure the 'members' and 'memberIDs' fields exist, initialize them if not
       if (!groupData.members) {
         groupData.members = [];
       }
-  
-      // Check if the student is already a member
-      if (groupData.members.includes(fullName)) {
-        alert('You are already a member of this group!');
-        return; // Exit the function if already a member
+      if (!groupData.memberIDs) {
+        groupData.memberIDs = [];
       }
   
-      // Add student’s full name to the group’s member list
+      // Check if the student is already a member
+      if (groupData.memberIDs.includes(userId)) {
+        alert('You are already a member of this group!');
+        return;
+      }
+  
+      // Add student’s full name and userId to the group's lists
       groupData.members.push(fullName);
+      groupData.memberIDs.push(userId);
   
       // Update the group with the new members list
       await firebase.firestore().collection('project_groups').doc(groupId).update({
-        members: groupData.members
+        members: groupData.members,
+        memberIDs: groupData.memberIDs
       });
   
       // Now add the group ID to the student's projectGroups field
@@ -544,8 +562,16 @@ function getRandomColor() {
       const userProjectGroups = userDocSnapshot.data().projectGroups || [];
   
       // Ensure the student isn't already in the group (to prevent duplicates)
-      if (!userProjectGroups.includes(groupId)) {
-        userProjectGroups.push(groupId);
+      if (!userProjectGroups.some(group => group.projectId === groupId)) {
+        userProjectGroups.push({
+          projectId: groupId,
+          tasks: [],           // Initialize tasks map for the group
+          totalHours: 0,       // Initialize totalHours for the group
+          totalTasks: 0,       // Initialize totalTasks for the group
+          tasksCompleted: 0,   // Initialize tasksCompleted for the group
+          progressPercent: 0,  // Initialize progressPercent for the group
+          nextDeadline: null   // Initialize nextDeadline for the group
+        });
         await userRef.update({
           projectGroups: userProjectGroups
         });
@@ -558,7 +584,7 @@ function getRandomColor() {
       alert('An error occurred while joining the group. Please try again.');
     }
   }
-
+  
   // Make an Announcement
   async function makeAnnouncement() {
     const announcementMessage = document.getElementById('announcementMessage').value.trim();
@@ -746,43 +772,105 @@ function getRandomColor() {
   }
   
   // Function to handle adding a task
-  async function addTaskToGroup(taskName, assignedTo, taskDate) {
+  async function addTaskToGroup(taskName, assignedTo, taskDate, taskHours) {
     const groupId = new URLSearchParams(window.location.search).get('groupId');
     
-    if (!taskName) {
-      alert('Task name is required.');
+    // Validate required fields
+    if (!taskName || !assignedTo || !taskDate || !taskHours) {
+      alert('All fields are required.');
       return;
     }
-    
+  
+    if (isNaN(taskHours) || taskHours <= 0) {
+      alert('Please enter a valid number of hours.');
+      return;
+    }
+  
     try {
       const groupDocRef = firebase.firestore().collection('project_groups').doc(groupId);
       const groupDoc = await groupDocRef.get();
-      
+  
       if (!groupDoc.exists) {
         console.error('Project group does not exist.');
         return;
       }
-      
+  
       const groupData = groupDoc.data();
-      
+  
+      // Map assignedTo names to their corresponding member IDs
+      const memberMap = groupData.members.reduce((map, member) => {
+        map[member.name] = member.id; // Assuming 'name' is the display name in members
+        return map;
+      }, {});
+  
+      const assignedToIDs = firebase.auth().currentUser.uid;
+  
       const newTask = {
         taskName,
-        assignedTo: assignedTo || [],  // Default to an empty array if no one is assigned
-        taskDate: taskDate ? new Date(taskDate) : null,  // Set to null if no date
+        assignedTo: assignedTo || [],
+        assignedToID: assignedToIDs, // Add the corresponding member IDs
+        taskDate: taskDate,
+        taskHours: taskHours,
         completed: false
       };
-      
+  
+      // Add new task to the group (we'll update the group itself with this later)
       const updatedTasks = [...(groupData.tasks || []), newTask];
-      
-      await groupDocRef.update({ tasks: updatedTasks });
+  
+      // Fetch the user's projectGroups data to update the metrics
+      const userId = firebase.auth().currentUser.uid;
+      const userRef = firebase.firestore().collection('Users').doc(userId);
+      const userDoc = await userRef.get();
+      const userData = userDoc.data();
+      const userProjectGroups = userData.projectGroups || [];
+  
+      // Find the project group that matches the current groupId
+      const updatedProjectGroups = userProjectGroups.map(group => {
+        if (group.projectId === groupId) {
+          // Calculate updated metrics based on user's current data
+          const updatedTotalTasks = group.totalTasks + 1;
+          const tasksCompleted = updatedTasks.filter(task => task.completed).length;
+          const progressPercent = (tasksCompleted / updatedTotalTasks) * 100;
+  
+          // Find the next deadline (earliest task date)
+          const futureTasks = updatedTasks.filter(task => task.taskDate);
+          const nextDeadline = futureTasks.length > 0
+            ? futureTasks.reduce((earliest, task) => task.taskDate < earliest ? task.taskDate : earliest, futureTasks[0].taskDate)
+            : null;
+  
+          // Return the updated project group
+          return {
+            ...group,
+            tasks: updatedTasks,
+            totalTasks: updatedTotalTasks,
+            tasksCompleted: tasksCompleted,
+            progressPercent: progressPercent,
+            nextDeadline: nextDeadline
+          };
+        }
+        return group;
+      });
+  
+      // Update the user's projectGroups field with the updated group data
+      await userRef.update({
+        projectGroups: updatedProjectGroups
+      });
+  
+      // Also update the project group in the 'project_groups' collection (group-level data)
+      await groupDocRef.update({
+        tasks: updatedTasks
+      });
+  
       alert('Task added successfully!');
       loadProjectData();  // Reload tasks to reflect the new one
+      generateMemberCards();
       loadTasks();
     } catch (error) {
       console.error('Error adding task to group:', error);
       alert('An error occurred while adding the task.');
     }
   }
+  
   
   // Event listener for the task form submission
   document.getElementById('taskForm').addEventListener('submit', async function(event) {
@@ -791,23 +879,31 @@ function getRandomColor() {
     const taskName = document.getElementById('taskName').value.trim();
     const assignedTo = Array.from(document.getElementById('assignedTo').selectedOptions).map(option => option.value);
     const taskDate = document.getElementById('taskDate').value.trim();
+    const taskHours = Number(document.getElementById('taskHours').value.trim());  // Capture the task hours
     
-    // Call the function to add task to the group
-    await addTaskToGroup(taskName, assignedTo, taskDate);
+    // Validate if taskHours is entered and is a valid number
+    if (!taskHours || isNaN(taskHours) || taskHours <= 0) {
+      alert('Please enter a valid number of hours.');
+      return;
+    }
+  
+    // Call the function to add task to the group with the hours included
+    await addTaskToGroup(taskName, assignedTo, taskDate, taskHours);
     
     // Close the modal after adding the task
     closeModal('taskModal');
   });
+  
 
   // Function to update the progress bar
-function updateProgressBar() {
+  function updateProgressBar() {
     const groupId = new URLSearchParams(window.location.search).get('groupId');
   
     firebase.firestore().collection('project_groups').doc(groupId).get().then(groupDoc => {
       const groupData = groupDoc.data();
       const totalTasks = groupData.tasks.length;
       const completedTasks = groupData.tasks.filter(task => task.completed).length;
-      
+  
       // Calculate progress as a percentage
       const progressPercentage = (completedTasks / totalTasks) * 100;
   
@@ -816,42 +912,80 @@ function updateProgressBar() {
       const progressText = document.getElementById('progressPercentage');
       progressBar.style.width = `${progressPercentage}%`;
       progressText.textContent = `${Math.round(progressPercentage)}%`;
+  
+      // Update member cards dynamically
+      const memberCardsContainer = document.getElementById('membersList');
+      groupData.memberIDs.forEach(async (memberId) => {
+        const userDoc = await firebase.firestore().collection('Users').doc(memberId).get();
+        const userData = userDoc.data();
+  
+        if (userData) {
+          const userProjectGroup = userData.projectGroups.find(pg => pg.projectId === groupId);
+          if (userProjectGroup) {
+            const memberCard = memberCardsContainer.querySelector(`.member-card[data-member-id="${memberId}"]`);
+            if (memberCard) {
+                const totalTasks = userProjectGroup.totalTasks || 0;
+                const tasksCompleted = userProjectGroup.tasksCompleted || 0;
+                const tasksInProgress = totalTasks - tasksCompleted;
+                const totalHours = userProjectGroup.totalHours;
+                const progressPercent = (tasksCompleted / totalTasks) * 100 || 0;
+    
+                // Update the card's content
+                memberCard.querySelector('p:nth-child(2)').textContent = `Total Tasks: ${totalTasks}`;
+                memberCard.querySelector('p:nth-child(3)').textContent = `Tasks Completed: ${tasksCompleted}`;
+                memberCard.querySelector('p:nth-child(4)').textContent = `Tasks In Progress: ${tasksInProgress}`;
+                memberCard.querySelector('p:nth-child(5)').textContent = `Total Hours: ${totalHours}`;
+                const progressCircle = memberCard.querySelector('.progress-circle circle:nth-child(2)');
+                progressCircle.setAttribute('stroke-dasharray', `${progressPercent * 2.83}, 283`);
+                memberCard.querySelector('.progress-circle span').textContent = `${Math.round(progressPercent)}%`;
+              }
+          }
+        }
+      });
     });
   }
+  
   
   // Function to load tasks and set up the progress bar
   async function loadTasks() {
     const groupId = new URLSearchParams(window.location.search).get('groupId');
-    
-    try {
-      const groupDoc = await firebase.firestore().collection('project_groups').doc(groupId).get();
-      const groupData = groupDoc.data();
-      
-      const taskList = document.getElementById('taskList');
-      taskList.innerHTML = '';  // Clear previous tasks
-      
-      groupData.tasks.forEach((task, index) => {
-        const taskItem = document.createElement('div');
-        taskItem.classList.add('task-item');
-        taskItem.innerHTML = `
-          <h4>${task.taskName}</h4>
-          <p>Assigned to: ${task.assignedTo.join(', ') || 'No one'}</p>
-          <p>Deadline: ${task.taskDate ? new Date(task.taskDate).toLocaleDateString() : 'No deadline'}</p>
-          <input type="checkbox" class="complete-task" ${task.completed ? 'checked' : ''} data-task-index="${index}">
-        `;
-        
-        taskList.appendChild(taskItem);
+    const currentUserId = firebase.auth().currentUser.uid; // Get the currently logged-in user's ID
   
-        // Add event listener to update task completion when checkbox is toggled
-        const checkbox = taskItem.querySelector('.complete-task');
+    try {
+      const groupDocRef = firebase.firestore().collection('project_groups').doc(groupId);
+      const groupDoc = await groupDocRef.get();
+      const groupData = groupDoc.data();
+  
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = ''; // Clear previous tasks
+  
+      groupData.tasks.forEach((task, index) => {
+        const isAssignedToCurrentUser = task.assignedToID === currentUserId; // Check if the task is assigned to the current user
+  
+        // Create a task row (table row)
+        const taskRow = document.createElement('tr');
+        
+        // Create the table data cells
+        const checkboxCell = document.createElement('td');
+        const nameCell = document.createElement('td');
+        const assignedCell = document.createElement('td');
+        const deadlineCell = document.createElement('td');
+        const statusCell = document.createElement('td');
+        
+        // Checkbox
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.classList.add('complete-task');
+        checkbox.checked = task.completed;
+        checkbox.disabled = !isAssignedToCurrentUser; // Disable if not assigned to the current user
+        checkbox.setAttribute('data-task-index', index);
         checkbox.addEventListener('change', async () => {
-          task.completed = checkbox.checked;
-          
+          const isCompleted = checkbox.checked;
+          task.completed = isCompleted;
+  
           // Update Firestore with new task status
-          const groupDocRef = firebase.firestore().collection('project_groups').doc(groupId);
           const updatedTasks = [...groupData.tasks];
           updatedTasks[index] = task;
-          
           await groupDocRef.update({ tasks: updatedTasks });
   
           // Update progress bar
@@ -879,17 +1013,71 @@ function updateProgressBar() {
           
           
              
+          // Update progress for the current user (only for assigned tasks)
+          const userDocRef = firebase.firestore().collection('Users').doc(currentUserId);
+          const userDoc = await userDocRef.get();
+          const userData = userDoc.data();
+  
+          if (userData) {
+            const userProjectGroup = userData.projectGroups.find(pg => pg.projectId === groupId);
+  
+            if (userProjectGroup) {
+              if (isCompleted) {
+                // Only update tasksCompleted if the task is assigned to the current user
+                userProjectGroup.tasksCompleted = (userProjectGroup.tasksCompleted || 0) + 1;
+                userProjectGroup.totalHours = (userProjectGroup.totalHours || 0) + (task.taskHours || 0);
+              } else {
+                userProjectGroup.tasksCompleted = Math.max(0, (userProjectGroup.tasksCompleted || 0) - 1);
+                userProjectGroup.totalHours = Math.max(0, (userProjectGroup.totalHours || 0) - (task.taskHours || 0));
+              }
+  
+              // Update Firestore with the modified project group data
+              await userDocRef.update({
+                projectGroups: userData.projectGroups.map(pg =>
+                  pg.projectId === groupId ? userProjectGroup : pg
+                ),
+              });
+            }
+          }
+  
+          // Update progress bar for the group
+          updateProgressBar();
         });
+  
+        checkboxCell.appendChild(checkbox);
+  
+        // Task Name
+        nameCell.textContent = task.taskName;
+  
+        // Assigned To
+        assignedCell.textContent = task.assignedTo.join(', ') || 'No one';
+  
+        // Deadline
+        deadlineCell.textContent = task.taskDate;
+  
+        // Status
+        const status = task.completed ? 'Completed' : 'Pending';
+        statusCell.textContent = status;
+        statusCell.classList.add(task.completed ? 'status-completed' : 'status-pending');
+  
+        // Append cells to the row
+        taskRow.appendChild(checkboxCell);
+        taskRow.appendChild(nameCell);
+        taskRow.appendChild(assignedCell);
+        taskRow.appendChild(deadlineCell);
+        taskRow.appendChild(statusCell);
+  
+        // Append the row to the table body
+        taskList.appendChild(taskRow);
       });
   
       // Update progress bar after loading tasks
       updateProgressBar();
-      
-  
     } catch (error) {
       console.error('Error loading tasks:', error);
     }
   }
+  
 
  
   
@@ -993,17 +1181,23 @@ function updateProgressBar() {
       
       resources.forEach((resource) => {
         const resourceItem = document.createElement('div');
-        resourceItem.classList.add('resource-item');
+        resourceItem.classList.add('resource-card');
+        
+        // Adding a thumbnail or image is optional, can be added if resources have images
         resourceItem.innerHTML = `
-          <h4>${resource.note}</h4>
-          ${resource.link ? `<a href="${resource.link}" target="_blank">${resource.link}</a>` : ''}
+          <div class="resource-content">
+            <h4 class="resource-title">${resource.note}</h4>
+            ${resource.link ? `<a href="${resource.link}" target="_blank" class="resource-link">${resource.link}</a>` : ''}
+          </div>
         `;
+        
         resourceList.appendChild(resourceItem);
       });
     } catch (error) {
       console.error('Error loading resources:', error);
     }
   }
+  
   
   // Event listener for the resource form submission
   document.getElementById('resourceForm').addEventListener('submit', async (e) => {
@@ -1103,3 +1297,103 @@ function fireConfetti(){
     origin: { y: 1.1 }
   });
 }
+  async function generateMemberCards() {
+    const groupId = new URLSearchParams(window.location.search).get('groupId');
+  
+    try {
+      const groupDocRef = firebase.firestore().collection('project_groups').doc(groupId);
+      const groupDoc = await groupDocRef.get();
+      const groupData = groupDoc.data();
+  
+      const memberListContainer = document.getElementById('membersList');
+      memberListContainer.innerHTML = ''; // Clear previous cards
+  
+      // Store member cards for quick updates
+      const memberCardsMap = new Map();
+  
+      // Loop through the member IDs and generate their cards
+      for (const memberId of groupData.memberIDs) {
+        const userDocRef = firebase.firestore().collection('Users').doc(memberId);
+        const userDoc = await userDocRef.get();
+        const userData = userDoc.data();
+  
+        if (userData) {
+          const userProjectGroup = userData.projectGroups.find(projectGroup => projectGroup.projectId === groupId);
+  
+          if (userProjectGroup) {
+            const memberName = `${userData.firstName} ${userData.lastName}`;
+            const totalTasks = userProjectGroup.totalTasks;
+            const tasksCompleted = userProjectGroup.tasksCompleted;
+            const tasksInProgress = totalTasks - tasksCompleted;
+            const totalHours = userProjectGroup.totalHours;
+            const progressPercent = (tasksInProgress / totalTasks) * 100 || 0;
+            const nextDeadline = userProjectGroup.nextDeadline || 'No upcoming deadlines';
+  
+            // Create a card for the member
+            const memberCard = document.createElement('div');
+            memberCard.classList.add('member-card');
+            memberCard.dataset.memberId = memberId; // Attach memberId for updates
+  
+            memberCard.innerHTML = `
+              <h4>${memberName}</h4>
+              <p><strong>Total Tasks:</strong> ${totalTasks}</p>
+              <p><strong>Tasks Completed:</strong> ${tasksCompleted}</p>
+              <p><strong>Tasks In Progress:</strong> ${tasksInProgress}</p>
+              <p>Total Hours:</strong> ${totalHours}</p>
+              
+              <div class="progress-circle">
+                <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="45" stroke="#eee" stroke-width="5" fill="none"></circle>
+                  <circle cx="50" cy="50" r="45" stroke="green" stroke-width="5" fill="none" 
+                          stroke-dasharray="${progressPercent * 2.83}, 283" 
+                          stroke-linecap="round"></circle>
+                </svg>
+                <span>${Math.round(progressPercent)}%</span>
+              </div>
+              
+              <p><strong>Next Deadline:</strong> ${nextDeadline}</p>
+            `;
+  
+            memberListContainer.appendChild(memberCard);
+            memberCardsMap.set(memberId, memberCard);
+          }
+        }
+      }
+  
+      // Listen for real-time updates
+      groupDocRef.onSnapshot(async () => {
+        for (const memberId of groupData.memberIDs) {
+          const userDoc = await firebase.firestore().collection('Users').doc(memberId).get();
+          const userData = userDoc.data();
+  
+          if (userData) {
+            const userProjectGroup = userData.projectGroups.find(projectGroup => projectGroup.projectId === groupId);
+  
+            if (userProjectGroup) {
+              const memberCard = memberCardsMap.get(memberId);
+              if (memberCard) {
+                const totalTasks = userProjectGroup.totalTasks || 0;
+                const tasksCompleted = userProjectGroup.tasksCompleted || 0;
+                const tasksInProgress = totalTasks - tasksCompleted;
+                const totalHours = userProjectGroup.totalHours;
+                const progressPercent = (tasksCompleted / totalTasks) * 100 || 0;
+    
+                // Update the card's content
+                memberCard.querySelector('p:nth-child(2)').textContent = `Total Tasks: ${totalTasks}`;
+                memberCard.querySelector('p:nth-child(3)').textContent = `Tasks Completed: ${tasksCompleted}`;
+                memberCard.querySelector('p:nth-child(4)').textContent = `Tasks In Progress: ${tasksInProgress}`;
+                memberCard.querySelector('p:nth-child(5)').textContent = `Total Hours: ${totalHours}`;
+                const progressCircle = memberCard.querySelector('.progress-circle circle:nth-child(2)');
+                progressCircle.setAttribute('stroke-dasharray', `${progressPercent * 2.83}, 283`);
+                memberCard.querySelector('.progress-circle span').textContent = `${Math.round(progressPercent)}%`;
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error generating member cards:', error);
+    }
+  }
+  
+  
