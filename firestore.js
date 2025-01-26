@@ -858,7 +858,7 @@ function getRandomColor() {
       const updatedTasks = [...(groupData.tasks || []), newTask];
   
       // Fetch the user's projectGroups data to update the metrics
-      const userId = firebase.auth().currentUser.uid;
+      const userId = assignedToID[0];
       const userRef = firebase.firestore().collection('Users').doc(userId);
       const userDoc = await userRef.get();
       const userData = userDoc.data();
@@ -869,7 +869,7 @@ function getRandomColor() {
         if (group.projectId === groupId) {
           // Calculate updated metrics based on user's current data
           const updatedTotalTasks = group.totalTasks + 1;
-          const tasksCompleted = updatedTasks.filter(task => task.completed).length;
+          const tasksCompleted = group.tasksCompleted;
           const progressPercent = (tasksCompleted / updatedTotalTasks) * 100;
   
           // Find the next deadline (earliest task date)
