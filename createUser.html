@@ -6,51 +6,96 @@
   <title>Create User</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--light-beige);
+      color: #333;
       margin: 0;
       padding: 0;
     }
-    .container {
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    :root {
+      --light-yellow: #fceaba;
+      --blue-gray: #7595a3;
+      --light-teal: #9dd1cc;
+      --off-white: #fcf6ed;
+      --light-beige: #fdf5dc;
+      --light-yellow2: #fdeabc;
+      --beige: #faf7ed;
+      --peach: #fcccb8;
+      --gold: #f8cc55;
+      --light-peach: #faebba;
     }
+
     .title {
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 20px;
       text-align: center;
+      color: var(--blue-gray);
     }
+
     .form-group {
       margin-bottom: 15px;
     }
+
     .form-group label {
       display: block;
-      font-size: 14px;
-      margin-bottom: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--blue-gray);
     }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+
+    * {
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 400px;
+  width: 100%;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: var(--beige);
+  border: 2px solid black;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px #7595a3;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px;
+  border: 2px solid black;
+  border-radius: 8px;
+  background-color: var(--light-peach);
+  color: #333;
+  font-size: 14px;
+  box-shadow: inset 2px 2px 0px var(--peach);
+  margin: 0; /* Ensure no extra margin is added */
+}
+
+
     .button {
       width: 100%;
       padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+      background-color: var(--gold);
+      color: black;
+      border: 2px solid black;
+      border-radius: 12px;
       font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s, background-color 0.3s;
     }
+
     .button:hover {
-      background-color: #0056b3;
+      background-color: var(--light-yellow);
+      transform: scale(1.05);
+    }
+
+    .button:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
@@ -79,12 +124,11 @@
   </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="firestore.js"></script>
 </body>
 </html>
