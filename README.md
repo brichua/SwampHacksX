@@ -1,0 +1,1 @@
+Tired of group projects with poor communication, nonexistent planning, and accountable teammates? Introducing StudySync, a collaborative platform built to help students streamline the group project experience, while also providing educators the tools they need to keep their students accountable.
