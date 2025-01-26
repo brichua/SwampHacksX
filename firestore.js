@@ -118,13 +118,13 @@ function getRandomColor() {
         return;
     }
 
-    const classImageUrl =null;
+    var classImageUrl =null;
 
     const className = classNameElement.value.trim();
     try{
-        classImageUrl = document.getElementById('classImage').value;
+        classImageUrl = document.getElementById('classImage').value.trim();
     }catch(error){
-
+      console.error('Error getting image url:', error);
     }
 
     if (!className) {
@@ -205,7 +205,7 @@ function getRandomColor() {
         // Invisible code with background color, initially hidden text
         const classCodeText = document.createElement('span');
         classCodeText.classList.add('class-code');
-        classCodeText.innerText = '‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ';
+        classCodeText.innerText = ' ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ';
 
         // Add hover effect to the container, not the text itself
         classCodeContainer.onmouseover = () => {
@@ -317,7 +317,7 @@ function getRandomColor() {
       if (!classDoc.empty) {
         classData = classDoc.docs[0].data();
         document.getElementById('className').textContent = classData.name;
-        document.getElementById('classCode').textContent = `Class Code: ${classData.code}`;
+        document.getElementById('classCode').textContent = `${classData.code}`;
       }
     } catch (error) {
       console.error('Error loading class data:', error);
@@ -396,9 +396,12 @@ function getRandomColor() {
   
   // Create a new Project Group
   async function createProjectGroup() {
-    const groupName = document.getElementById('groupName').value.trim();
-    const classCode = document.getElementById('classCode').value.trim();
-    const className = document.getElementById('className').value.trim();
+    const groupName = document.getElementById('groupName').value;
+    const classCode = document.getElementById('classCode').textContent;
+    const className = document.getElementById('className').innerText;
+    console.log(groupName);
+    console.log(classCode);
+    console.log(className);
   
     if (!groupName || (!classCode || !className)) {
       alert('Please enter all required information.');
@@ -422,7 +425,7 @@ function getRandomColor() {
         name: groupName,
         classCode: userRole === 'student' ? null : classCode,  // Students may not need a class code
         className: userRole === 'student' ? null : className,
-        members: [userId],  // Initialize with the creator as a member
+        members: [],  // Initialize with the creator as a member
         createdBy: createdBy,  // Mark the project as created by either 'teacher' or 'student'
         code: groupCode,
         announcements: [],
@@ -432,10 +435,10 @@ function getRandomColor() {
       alert('Project created successfully!');
       if (userRole === 'student') {
         loadStudentProjectGroups(); // Reload the student's 
-      } else {
-        loads(); // Reload teacher projects
       }
       closeCreateGroupModal();
+      loadProjectGroups();
+      
     } catch (error) {
       console.error('Error creating project group:', error);
       alert('Error creating project group.');
@@ -868,7 +871,7 @@ function getRandomColor() {
         if (group.projectId === groupId) {
           // Calculate updated metrics based on user's current data
           const updatedTotalTasks = group.totalTasks + 1;
-          const tasksCompleted = updatedTasks.filter(task => task.completed).length;
+          const tasksCompleted = group.tasksCompleted;
           const progressPercent = (tasksCompleted / updatedTotalTasks) * 100;
   
           // Find the next deadline (earliest task date)

@@ -174,8 +174,8 @@
         <input type="text" id="className" placeholder="Enter class name" required>
       </div>
       <div class="form-group">
-        <label for="classImageUrl">Class Image URL (Optional)</label>
-        <input type="text" id="classImageUrl" placeholder="Enter image URL">
+        <label for="classImage" >Class Image URL (Optional)</label>
+        <input type="text" id="classImage" placeholder="Enter image URL">
       </div>
       <button class="button" onclick="createClass()">Submit</button>
     </div>
@@ -200,30 +200,6 @@
       document.getElementById('classModal').style.display = 'none';
     }
 
-    function createClass() {
-      const className = document.getElementById('className').value;
-      const classImageUrl = document.getElementById('classImageUrl').value;
-      
-      if (!className) {
-        alert("Please enter a class name.");
-        return;
-      }
-
-      // Logic to create a new class and add it to the class list
-      const classItem = document.createElement('div');
-      classItem.className = 'class-item';
-      
-      classItem.innerHTML = `
-        <div class="class-image" style="background-image: url('${classImageUrl || '#ccc'}');"></div>
-        <div class="class-info">
-          <div><strong>${className}</strong></div>
-          <div class="class-code-container"><span class="class-code">Code: ABC123</span></div>
-        </div>
-      `;
-
-      document.getElementById('classList').appendChild(classItem);
-      closeModal(); // Close the modal after class creation
-    }
   </script>
 </body>
 </html>
