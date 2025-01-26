@@ -760,11 +760,14 @@ function getRandomColor() {
       const groupData = groupDoc.data();
       
       const membersDropdown = document.getElementById('assignedTo');
+      var i = 0;
       groupData.members.forEach(memberId => {
         const option = document.createElement('option');
-        option.value = memberId;
+        option.value = groupData.memberIDs[i];
+        option.innerText = groupData.memberIDs[i];
         option.textContent = memberId;
         membersDropdown.appendChild(option);
+        i++;
       });
     } catch (error) {
       console.error('Error loading group members:', error);
@@ -772,7 +775,7 @@ function getRandomColor() {
   }
   
   // Function to handle adding a task
-  async function addTaskToGroup(taskName, assignedTo, taskDate, taskHours) {
+  async function addTaskToGroup(taskName, assignedTo, assignedToID, taskDate, taskHours) {
     const groupId = new URLSearchParams(window.location.search).get('groupId');
     
     // Validate required fields
@@ -803,12 +806,11 @@ function getRandomColor() {
         return map;
       }, {});
   
-      const assignedToIDs = firebase.auth().currentUser.uid;
   
       const newTask = {
         taskName,
         assignedTo: assignedTo || [],
-        assignedToID: assignedToIDs, // Add the corresponding member IDs
+        assignedToID: assignedToID, // Add the corresponding member IDs
         taskDate: taskDate,
         taskHours: taskHours,
         completed: false
@@ -877,7 +879,8 @@ function getRandomColor() {
     event.preventDefault();  // Prevent the default form submission behavior
     
     const taskName = document.getElementById('taskName').value.trim();
-    const assignedTo = Array.from(document.getElementById('assignedTo').selectedOptions).map(option => option.value);
+    const assignedToID = Array.from(document.getElementById('assignedTo').selectedOptions).map(option => option.value);
+    const assignedTo = Array.from(document.getElementById('assignedTo').selectedOptions).map(option => option.textContent);
     const taskDate = document.getElementById('taskDate').value.trim();
     const taskHours = Number(document.getElementById('taskHours').value.trim());  // Capture the task hours
     
@@ -888,7 +891,7 @@ function getRandomColor() {
     }
   
     // Call the function to add task to the group with the hours included
-    await addTaskToGroup(taskName, assignedTo, taskDate, taskHours);
+    await addTaskToGroup(taskName, assignedTo, assignedToID, taskDate, taskHours);
     
     // Close the modal after adding the task
     closeModal('taskModal');
@@ -960,8 +963,8 @@ function getRandomColor() {
       taskList.innerHTML = ''; // Clear previous tasks
   
       groupData.tasks.forEach((task, index) => {
-        const isAssignedToCurrentUser = task.assignedToID === currentUserId; // Check if the task is assigned to the current user
-  
+        const isAssignedToCurrentUser = task.assignedToID[0] == currentUserId; // Check if the task is assigned to the current user
+
         // Create a task row (table row)
         const taskRow = document.createElement('tr');
         
@@ -1388,7 +1391,7 @@ function fireConfetti(){
         let tasksCompleted = 0;
       
         groupData.tasks.forEach((task, index) => {
-          const isAssignedToCurrentUser = task.assignedToID === firebase.auth().currentUser.uid;
+          const isAssignedToCurrentUser = task.assignedToID == firebase.auth().currentUser.uid;
       
           // Create task row
           const taskRow = document.createElement('tr');
