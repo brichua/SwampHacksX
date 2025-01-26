@@ -1796,6 +1796,7 @@ const groups = await db.collection('project_groups').where('classCode', '==', cl
         // Calculate progress as a percentage
         const progressPercentage = (completedTasks / totalTasks) * 100;
         completionStats.push(progressPercentage);
+        console.log(completionStats);
         }
       });
       
@@ -1805,11 +1806,17 @@ const groups = await db.collection('project_groups').where('classCode', '==', cl
     marker: {
       color: '#9dd1cc',
     },
+    xbins: {
+      start: 0,
+      end: 110,
+      size: 10
+    },
+  
     
-    
-    
+  
   };
   var data = [trace];
+  console.log(data);
   var layout = {
     title: {
       text: "Groups Progress"
@@ -1818,7 +1825,7 @@ const groups = await db.collection('project_groups').where('classCode', '==', cl
         title: {
             text: "Percentage of Tasks Completed"
         },
-        range: [0, 100]
+        range: [0, 110],
         
     },
     yaxis: {
