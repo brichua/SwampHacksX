@@ -1,4 +1,5 @@
 
+
 const firebaseConfig = {
     apiKey: "AIzaSyCfTQ5WMHn3AwBLF0VJ-wsNen3PYYNANPc",
     authDomain: "swamphacksx.firebaseapp.com",
@@ -264,6 +265,7 @@ function getRandomColor() {
         loadGroupMembers();
         loadTasks();
         loadResources();
+        sendAlert();
         await loadProjectGroups();
       }else if(role == "student"){
         loadStudentProjectGroups();
@@ -271,6 +273,7 @@ function getRandomColor() {
         loadGroupMembers();
         loadTasks();
         loadResources();
+        sendAlert();
       }
     } else {
     }
@@ -853,26 +856,29 @@ function updateProgressBar() {
   
           // Update progress bar
           updateProgressBar();
-          const alertList = document.getElementById('alertList');
-          const alertItem = document.createElement('div');
-          alertItem.classList.add('alert');
           
-          alertItem.classList.add('alert-dismissible');
+          let msg = "";
+          let status = false;
+
           if (task.completed){
-          alertItem.classList.add('alert-success');
-          alertItem.innerHTML = `
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-            <strong>${task.assignedTo.join(', ') || 'No one'} completed ${task.taskName} </strong>
-          `;
+            msg = task.assignedTo.join(', ') + ' completed ' + task.taskName;
+            status = true;
           }else{
-            alertItem.classList.add('alert-warning');
-            alertItem.innerHTML = `
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-            <strong>${task.assignedTo.join(', ') || 'No one'} uncompleted ${task.taskName} </strong>
-          `;
+            msg = task.assignedTo.join(', ') + ' uncompleted ' + task.taskName;
           }
-          alertList.appendChild(alertItem);
-      
+        
+          const newAlert = {
+            id: Date.now(),
+            message: msg,
+            completed: status
+          };
+          await groupDocRef.update({
+            alerts: firebase.firestore.FieldValue.arrayUnion(newAlert)
+          });
+          sendAlert();
+          
+          
+             
         });
       });
   
@@ -884,6 +890,59 @@ function updateProgressBar() {
       console.error('Error loading tasks:', error);
     }
   }
+
+ 
+  
+  async function sendAlert(){
+    try {
+      console.log("Updated");
+      const groupDoc = await firebase.firestore().collection('project_groups').doc(groupId).get();
+      const groupData = groupDoc.data();
+
+      const alertList = document.getElementById('alertList');
+      alertList.innerHTML = '';  
+      
+
+      let numAlerts = groupData.alerts.length;
+
+      if(groupData.alerts[numAlerts-1].completed == true && Date.now()-groupData.alerts[numAlerts-1].id<500){
+        fireConfetti();
+      }
+      let limit = numAlerts-5;
+      if(numAlerts<5){
+        limit = 0
+      }
+      for (let i = numAlerts-1; i>=limit; i--){
+        const alertItem = document.createElement('div');
+        alertItem.classList.add('alert');
+        alertItem.classList.add('alert-dismissible');
+
+        
+        if (groupData.alerts[i].completed){
+          
+          alertItem.classList.add('alert-success');
+          alertItem.innerHTML = `
+            
+            <strong> ${groupData.alerts[i].message} </strong>
+          `;
+          }else{
+            
+            alertItem.classList.add('alert-warning');
+            alertItem.innerHTML = `
+            
+            <strong> ${groupData.alerts[i].message} </strong>
+          `;
+          }
+          alertList.appendChild(alertItem);
+      }
+      
+    } catch(error) {
+      console.error('Error loading alerts:', error);
+    }
+       
+  }
+ 
+  setInterval(sendAlert, 1000);
 
   // Function to add a new resource to Firestore
   async function addResource(note, resourceLink = '') {
@@ -917,6 +976,8 @@ function updateProgressBar() {
       alert('Failed to add resource. Please try again.');
     }
   }
+
+  
   
   // Function to load and display resources
   async function loadResources() {
@@ -1032,3 +1093,13 @@ function updateProgressBar() {
     }
   });
   
+
+
+function fireConfetti(){
+  confetti({
+    particleCount: 300,
+    startVelocity: 60,
+    spread: 100,
+    origin: { y: 1.1 }
+  });
+}
