@@ -993,12 +993,20 @@ function getRandomColor() {
           
           let msg = "";
           let status = false;
+          let timestamp = Date.now(); // Current timestamp in milliseconds
+          let date = new Date(timestamp); // Create a Date object from the timestamp
+
+// Convert to a readable date and time
+          let formattedDate = date.toLocaleDateString(); // e.g., "1/25/2025" in MM/DD/YYYY format
+          let formattedTime = date.toLocaleTimeString(); // e.g., "10:15:30 AM"
+
+
 
           if (task.completed){
-            msg = task.assignedTo.join(', ') + ' completed ' + task.taskName;
+            msg = task.assignedTo.join(', ') + ' completed ' + task.taskName + '\n' + formattedDate + ' ' + formattedTime;
             status = true;
           }else{
-            msg = task.assignedTo.join(', ') + ' uncompleted ' + task.taskName;
+            msg = task.assignedTo.join(', ') + ' uncompleted ' + task.taskName + '\n' + formattedDate + ' ' + formattedTime;
           }
         
           const newAlert = {
