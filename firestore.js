@@ -1258,38 +1258,85 @@ function getRandomColor() {
       });
   }
   
-  document.getElementById('reviewForm').addEventListener('submit', async function(event) {
+  let selectedFeedback = null;
+
+  // Function to handle feedback type selection
+  function selectFeedback(feedbackType) {
+    selectedFeedback = feedbackType;
+  
+    // Highlight the selected button
+    document.querySelectorAll('.emoji-button').forEach(button => {
+      button.style.border = 'none'; // Reset all borders
+    });
+    document.getElementById(feedbackType).style.border = '2px solid blue';
+  }
+  
+  // Populate members in the dropdown
+  async function populateMembers() {
+    const groupId = new URLSearchParams(window.location.search).get('groupId');
+    const groupDoc = await firebase.firestore().collection('project_groups').doc(groupId).get();
+  
+    if (groupDoc.exists) {
+      const members = groupDoc.data().members || [];
+      const selectMember = document.getElementById('selectMember');
+  
+      // Populate the dropdown
+      members.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member; // Member ID
+        option.textContent = member; // Member Name
+        selectMember.appendChild(option);
+      });
+    }
+  }
+
+  populateMembers();
+  
+  // Submit feedback form
+  document.getElementById('reviewForm').addEventListener('submit', async function (event) {
     event.preventDefault();
   
-    const feedbackNote = document.getElementById('feedbackNote').value.trim();  // Get the optional note
-    const feedbackType = selectedFeedback;  // Get the selected emoji feedback
-    const userId = firebase.auth().currentUser.uid;
+    const feedbackNote = document.getElementById('feedbackNote').value.trim();
+    const feedbackType = selectedFeedback;
+    const submittedBy = firebase.auth().currentUser;
+    const selectedMemberId = document.getElementById('selectMember').value;
   
-    // Ensure that feedback type is selected
+    // Validate required fields
     if (!feedbackType) {
-      alert('Please select a feedback option.');
+      alert('Please select a feedback type.');
+      return;
+    }
+    if (!selectedMemberId) {
+      alert('Please select a member to review.');
       return;
     }
   
     try {
       const groupId = new URLSearchParams(window.location.search).get('groupId');
+      const groupDocRef = firebase.firestore().collection('project_groups').doc(groupId);
   
-      // Ensure the groupId exists
-      if (!groupId) {
-        console.error('Error: Group ID is missing or invalid.');
-        return;
-      }
+      // Fetch the member receiving feedback
+      const groupDoc = await groupDocRef.get();
+      const members = groupDoc.data().members || [];
+
   
       // Prepare feedback data
       const feedbackData = {
-        feedbackType: feedbackType,  // Store the emoji feedback
-        feedbackNote: feedbackNote,  // Store the optional note
-        submittedBy: userId,
+        feedbackType,
+        feedbackNote,
+        submittedBy: {
+          id: submittedBy.uid,
+          name: submittedBy.displayName || 'Anonymous',
+        },
+        reviewedMember: {
+          id: reviewedMember.id,
+          name: reviewedMember.name,
+        },
         submittedAt: new Date(),
       };
   
-      // Store feedback in the 'peerReviews' array of the project group
-      await firebase.firestore().collection('project_groups').doc(groupId).update({
+      // Store feedback in the database
+      await groupDocRef.update({
         peerReviews: firebase.firestore.FieldValue.arrayUnion(feedbackData),
       });
   
@@ -1300,6 +1347,10 @@ function getRandomColor() {
       alert('Error submitting feedback.');
     }
   });
+  
+  // Initialize members dropdown when the modal opens
+  document.getElementById('reviewModal').addEventListener('show', populateMembers);
+  
   
   
 document.getElementById('confetti-button').addEventListener("click", ()=>{
