@@ -1370,36 +1370,94 @@ function fireConfetti(){
       }
   
       // Listen for real-time updates
-      groupDocRef.onSnapshot(async () => {
-        for (const memberId of groupData.memberIDs) {
-          const userDoc = await firebase.firestore().collection('Users').doc(memberId).get();
-          const userData = userDoc.data();
-  
-          if (userData) {
-            const userProjectGroup = userData.projectGroups.find(projectGroup => projectGroup.projectId === groupId);
-  
-            if (userProjectGroup) {
-              const memberCard = memberCardsMap.get(memberId);
-              if (memberCard) {
-                const totalTasks = userProjectGroup.totalTasks || 0;
-                const tasksCompleted = userProjectGroup.tasksCompleted || 0;
-                const tasksInProgress = totalTasks - tasksCompleted;
-                const totalHours = userProjectGroup.totalHours;
-                const progressPercent = (tasksCompleted / totalTasks) * 100 || 0;
-    
-                // Update the card's content
-                memberCard.querySelector('p:nth-child(2)').textContent = `Total Tasks: ${totalTasks}`;
-                memberCard.querySelector('p:nth-child(3)').textContent = `Tasks Completed: ${tasksCompleted}`;
-                memberCard.querySelector('p:nth-child(4)').textContent = `Tasks In Progress: ${tasksInProgress}`;
-                memberCard.querySelector('p:nth-child(5)').textContent = `Total Hours: ${totalHours}`;
-                const progressCircle = memberCard.querySelector('.progress-circle circle:nth-child(2)');
-                progressCircle.setAttribute('stroke-dasharray', `${progressPercent * 2.83}, 283`);
-                memberCard.querySelector('.progress-circle span').textContent = `${Math.round(progressPercent)}%`;
-              }
-            }
-          }
-        }
+      groupDocRef.onSnapshot(async (doc) => {
+        const groupData = doc.data();
+      
+        // Clear the task table and reload tasks
+        const taskList = document.getElementById('taskList');
+        taskList.innerHTML = '';
+        let totalTasks = 0;
+        let tasksCompleted = 0;
+      
+        groupData.tasks.forEach((task, index) => {
+          const isAssignedToCurrentUser = task.assignedToID === firebase.auth().currentUser.uid;
+      
+          // Create task row
+          const taskRow = document.createElement('tr');
+      
+          const checkboxCell = document.createElement('td');
+          const nameCell = document.createElement('td');
+          const assignedCell = document.createElement('td');
+          const deadlineCell = document.createElement('td');
+          const statusCell = document.createElement('td');
+      
+          // Checkbox
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.classList.add('complete-task');
+          checkbox.checked = task.completed;
+          checkbox.disabled = !isAssignedToCurrentUser;
+          checkbox.setAttribute('data-task-index', index);
+      
+          checkbox.addEventListener('change', async () => {
+            task.completed = checkbox.checked;
+      
+            // Update Firestore
+            const updatedTasks = [...groupData.tasks];
+            updatedTasks[index] = task;
+            await groupDocRef.update({ tasks: updatedTasks });
+      
+            // Trigger an alert
+            const msg = task.completed
+              ? `${task.assignedTo.join(', ')} completed ${task.taskName}`
+              : `${task.assignedTo.join(', ')} uncompleted ${task.taskName}`;
+            const newAlert = {
+              id: Date.now(),
+              message: msg,
+              completed: task.completed,
+            };
+            await groupDocRef.update({
+              alerts: firebase.firestore.FieldValue.arrayUnion(newAlert),
+            });
+            sendAlert();
+      
+            // Update progress bar and member data
+            updateProgressBar();
+          });
+      
+          checkboxCell.appendChild(checkbox);
+      
+          // Populate other task details
+          nameCell.textContent = task.taskName;
+          assignedCell.textContent = task.assignedTo.join(', ') || 'No one';
+          deadlineCell.textContent = task.taskDate || 'No deadline';
+          statusCell.textContent = task.completed ? 'Completed' : 'Pending';
+          statusCell.classList.add(task.completed ? 'status-completed' : 'status-pending');
+      
+          // Append cells to the row
+          taskRow.appendChild(checkboxCell);
+          taskRow.appendChild(nameCell);
+          taskRow.appendChild(assignedCell);
+          taskRow.appendChild(deadlineCell);
+          taskRow.appendChild(statusCell);
+      
+          // Append the row to the table
+          taskList.appendChild(taskRow);
+      
+          // Update progress metrics
+          totalTasks++;
+          if (task.completed) tasksCompleted++;
+        });
+      
+        // Update the progress bar
+        const progressPercent = (tasksCompleted / totalTasks) * 100 || 0;
+        const progressBar = document.getElementById('taskProgressBar');
+        const progressPercentageText = document.getElementById('progressPercentage');
+        progressBar.style.width = `${progressPercent}%`;
+        progressPercentageText.textContent = `${Math.round(progressPercent)}%`;
       });
+      
+      
     } catch (error) {
       console.error('Error generating member cards:', error);
     }
