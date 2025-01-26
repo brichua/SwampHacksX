@@ -1482,4 +1482,10 @@ function fireConfetti(){
     }
   }
   
-  
+  // Add event listener to the sign-out link
+document.getElementById('signOut').addEventListener('click', () => {
+  //event.preventDefault(); // Prevent the default link behavior
+  console.log("clocked");
+  logOutUser();
+});
+
