@@ -6,40 +6,152 @@
   <title>Teacher Hub</title>
   <style>
     /* General styles */
-    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; }
-    .container { max-width: 800px; margin: 50px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-    .title { font-size: 24px; text-align: center; margin-bottom: 20px; }
-    .button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-    .button:hover { background: #0056b3; }
-    .class-list { margin-top: 20px; }
-    .class-item { display: flex; align-items: center; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; background: #f1f1f1; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease; }
-    .class-item:hover { background-color: #e1e1e1; }
-    .class-image { width: 100px; height: 100px; border-radius: 4px; margin-right: 20px; position: relative; }
-    .class-info { display: flex; flex-direction: column; }
-    
-    /* Random color background for image placeholder */
-    .random-color { background-color: #ccc; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #fceaba; /* Soft off-white */
+      margin: 0;
+      padding: 0;
+      color: #3b3b3b; /* Soft gray */
+    }
 
-    /* Class Code Visibility and Hover Effect */
+    .container {
+      max-width: 900px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      background-color: #fdf5dd; /* Light pastel yellow */
+    }
+
+    .title {
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 30px;
+      color: black; /* Gold tone */
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .button {
+      background: #9dd1cc; /* Light teal */
+      color: black;
+      padding: 12px 24px;
+      border: 2px solid black;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      transition: background 0.3s;
+      display: block;
+      margin: 20px auto;
+    }
+
+    .button:hover {
+      background: #7caba9; /* Darker teal */
+    }
+
+    .class-list {
+      margin-top: 30px;
+    }
+
+    .class-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 2px solid black;
+      margin-bottom: 15px;
+      background-color: #faf7ed;
+      border-radius: 8px;
+      transition: transform 0.3s, background-color 0.3s;
+    }
+
+    .class-item:hover {
+      background-color: #fcccb8; /* Light peach */
+      transform: translateX(5px);
+    }
+
+    .class-image {
+      width: 90px;
+      height: 90px;
+      border-radius: 8px;
+      margin-right: 20px;
+      background-color: #ccc; /* Placeholder color */
+    }
+
+    .class-info {
+      display: flex;
+      flex-direction: column;
+    }
+
     .class-code-container {
       display: inline-block;
       margin-top: 10px;
       font-weight: bold;
+      font-size: 14px;
+      color: black;
     }
 
     .class-code {
       padding: 5px;
-      border-radius: 4px;
-      background-color: #fffffff5;
+      border-radius: 5px;
+      background-color: #f8ca54;
     }
 
     /* Modal styles */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; }
-    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 400px; }
-    .close-btn { float: right; cursor: pointer; font-size: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; }
-    .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0,5);
+      justify-content: center;
+      align-items: center;
+      border: 2px solid black;
+    }
+
+    .modal-content {
+      background: #f8e3ba; /* Peachy beige */
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      border: 2px solid black;
+    }
+
+    .close-btn {
+      float: right;
+      cursor: pointer;
+      font-size: 24px;
+      color: #3b3b3b;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      margin-right: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: black;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid black;
+      border-radius: 5px;
+      background-color: #fdf5dc;
+      font-size: 14px;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #9dd1cc; /* Light teal border on focus */
+    }
   </style>
 </head>
 <body>
@@ -79,6 +191,39 @@
   <script src="firestore.js"></script>
 
   <script>
+    // Placeholder JavaScript for modal and class management
+    function openModal() {
+      document.getElementById('classModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('classModal').style.display = 'none';
+    }
+
+    function createClass() {
+      const className = document.getElementById('className').value;
+      const classImageUrl = document.getElementById('classImageUrl').value;
+      
+      if (!className) {
+        alert("Please enter a class name.");
+        return;
+      }
+
+      // Logic to create a new class and add it to the class list
+      const classItem = document.createElement('div');
+      classItem.className = 'class-item';
+      
+      classItem.innerHTML = `
+        <div class="class-image" style="background-image: url('${classImageUrl || '#ccc'}');"></div>
+        <div class="class-info">
+          <div><strong>${className}</strong></div>
+          <div class="class-code-container"><span class="class-code">Code: ABC123</span></div>
+        </div>
+      `;
+
+      document.getElementById('classList').appendChild(classItem);
+      closeModal(); // Close the modal after class creation
+    }
   </script>
 </body>
 </html>
