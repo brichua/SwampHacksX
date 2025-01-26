@@ -702,24 +702,45 @@ function getRandomColor() {
       if (role === 'teacher') {
         const feedbackList = groupData.peerReviews || [];
         const peerReviewListDiv = document.getElementById('peerReviewList');
-        
+      
         peerReviewListDiv.innerHTML = '';
-        
+      
         // Fetch and display feedback
         for (const feedback of feedbackList) {
           const reviewerId = feedback.submittedBy;
-          
-          // Fetch the reviewer (student) details
+          const recipientId = feedback.recipientID;
+      
+          // Fetch the reviewer details
           const reviewerDoc = await firebase.firestore().collection('Users').doc(reviewerId).get();
           const reviewerData = reviewerDoc.data();
-          
-          const reviewerName = `${reviewerData.firstName} ${reviewerData.lastName}`;
-          
-          // Create a list item for each feedback
-          const feedbackItem = document.createElement('li');
-          feedbackItem.classList.add('feedback-item');
-          feedbackItem.textContent = `Feedback: ${feedback.feedback} (Submitted by: ${reviewerName})`;
-          peerReviewListDiv.appendChild(feedbackItem);
+      
+          // Fetch the recipient details
+          const recipientDoc = await firebase.firestore().collection('Users').doc(recipientId).get();
+          const recipientData = recipientDoc.data();
+      
+          const reviewerName = feedback.submittedBy || 'General Feedback';
+          const feedbackType = feedback.feedbackType || 'General Feedback';
+          const recipientName = feedback.reviewedMember || 'General Feedback';
+          const feedbackNote = feedback.feedbackNote || 'No additional notes provided.';
+          const submittedAt = feedback.submittedAt
+            ? new Date(feedback.submittedAt.seconds * 1000).toLocaleString()
+            : 'Unknown submission time';
+      
+          // Create a feedback card
+          const feedbackCard = document.createElement('div');
+          feedbackCard.classList.add('feedback-card');
+      
+          feedbackCard.innerHTML = `
+            <div class="feedback-card-content">
+              <h4 class="feedback-title">Feedback on: ${recipientName}</h4>
+              <p><strong>Type:</strong> ${feedbackType}</p>
+              <p><strong>Note:</strong> ${feedbackNote}</p>
+              <p><strong>Submitted by:</strong> ${reviewerName}</p>
+              <p><strong>Submitted at:</strong> ${submittedAt}</p>
+            </div>
+          `;
+      
+          peerReviewListDiv.appendChild(feedbackCard);
         }
       } else {
         // Hide the peer review section for students
@@ -1174,8 +1195,6 @@ function getRandomColor() {
       alert('Failed to add resource. Please try again.');
     }
   }
-
-  
   
   // Function to load and display resources
   async function loadResources() {
@@ -1296,9 +1315,12 @@ function getRandomColor() {
   document.getElementById('reviewForm').addEventListener('submit', async function (event) {
     event.preventDefault();
   
+    const userId = firebase.auth().currentUser.uid;
     const feedbackNote = document.getElementById('feedbackNote').value.trim();
     const feedbackType = selectedFeedback;
-    const submittedBy = firebase.auth().currentUser;
+    const userDoc = await firebase.firestore().collection('Users').doc(userId).get();
+      const userData = userDoc.data();
+      const submittedBy = `${userData.firstName} ${userData.lastName}`;
     const selectedMemberId = document.getElementById('selectMember').value;
   
     // Validate required fields
@@ -1324,13 +1346,8 @@ function getRandomColor() {
       const feedbackData = {
         feedbackType,
         feedbackNote,
-        submittedBy: {
-          name: submittedBy.displayName || 'Anonymous',
-        },
-        reviewedMember: {
-          id: reviewedMember.id,
-          name: reviewedMember.name,
-        },
+        submittedBy: submittedBy,
+        reviewedMember: selectedMemberId,
         submittedAt: new Date(),
       };
   
