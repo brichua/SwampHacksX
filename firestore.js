@@ -267,6 +267,10 @@ function getRandomColor() {
         loadResources();
         sendAlert();
         generateMemberCards();
+
+        generateHistogram();
+        generatefeedBackChart();
+        generateAlertHistogram();
         await loadProjectGroups();
       }else if(role == "student"){
         loadStudentProjectGroups();
@@ -276,6 +280,9 @@ function getRandomColor() {
         loadResources();
         sendAlert();
         generateMemberCards();
+        generateHistogram();
+        generatefeedBackChart();
+        generateAlertHistogram();
       }
     } else {
     }
@@ -323,11 +330,18 @@ function getRandomColor() {
       const groups = await db.collection('project_groups').where('classCode', '==', classCode).get();
       groups.forEach(doc => {
         const groupData = doc.data();
+        let totalGroupHours = 0;
+        
+        groupData.tasks.forEach(task =>{
+          totalGroupHours += task.taskHours;
+        });
+        console.log(totalGroupHours/groupData.members.length);
         const groupItem = document.createElement('div');
         groupItem.classList.add('project-group');
         groupItem.innerHTML = `
           <h3>${groupData.name}</h3>
           <p>Members: ${groupData.members.join(', ')}</p>
+          <p>Average Hours per Member: ${totalGroupHours/groupData.members.length} hours</p>
         `;
         groupItem.onclick = () => {
           window.location.href = `project.html?groupId=${doc.id}`; // Redirect to specific group page
@@ -414,9 +428,9 @@ function getRandomColor() {
   
       alert('Project created successfully!');
       if (userRole === 'student') {
-        loadStudentProjectGroups(); // Reload the student's projects
+        loadStudentProjectGroups(); // Reload the student's 
       } else {
-        loadProjectGroups(); // Reload teacher projects
+        loads(); // Reload teacher projects
       }
       closeCreateGroupModal();
     } catch (error) {
@@ -1472,3 +1486,112 @@ document.getElementById('signOut').addEventListener('click', () => {
   logOutUser();
 });
 
+async function generateHistogram(){
+const groups = await db.collection('project_groups').where('classCode', '==', classCode).get();
+      let completionStats = [];
+      groups.forEach(doc => {
+        const groupData = doc.data();
+
+        const totalTasks = groupData.tasks.length;
+        const completedTasks = groupData.tasks.filter(task => task.completed).length;
+  
+        // Calculate progress as a percentage
+        const progressPercentage = (completedTasks / totalTasks) * 100;
+        completionStats.push(progressPercentage);
+      });
+      
+  var trace = {
+    x: completionStats,
+    type: "histogram",
+  };
+  var data = [trace];
+  var layout = {
+    title: {
+      text: "Groups Progress"
+    },
+    xaxis: {
+        title: {
+            text: "Percentage of Tasks Completed"
+        },
+        range: [0, 100]
+        
+    },
+    yaxis: {
+        title: {
+            text: "Number of Groups"
+        }
+
+    },
+    
+  };
+  Plotly.newPlot('completionHistogram', data,layout);
+}
+
+async function generatefeedBackChart(){
+  const groups = await db.collection('project_groups').where('classCode', '==', classCode).get();
+      let positiveRev = 0;
+      let neutralRev = 0;
+      let negativeRev = 0;
+      groups.forEach(doc => {
+        const groupData = doc.data();
+        
+        positiveRev += groupData.peerReviews.filter(review => review.feedbackType == "positive").length;
+        neutralRev += groupData.peerReviews.filter(review => review.feedbackType == "neutral").length;
+        negativeRev += groupData.peerReviews.filter(review => review.feedbackType == "negative").length;
+    });
+    
+    var data = [{
+      values: [positiveRev, neutralRev, negativeRev],
+      labels: ['Positive', 'Neutral', 'Negative'],
+      type: 'pie'
+    }];
+
+    var layout = {
+      title: {
+        text: 'Student Peer Review Feedback'
+      }
+    };
+    Plotly.newPlot('reviewPie',data, layout);
+}
+
+async function generateAlertHistogram(){
+  const groups = await db.collection('project_groups').where('classCode', '==', classCode).get();
+      let alertTimes = [];
+      groups.forEach(doc => {
+        const groupData = doc.data();
+
+        
+        const completionAlerts = groupData.alerts.filter(alert => alert.completed);
+        completionAlerts.forEach(alert=>{
+          alertTimes.push((alert.id-Date.now())/(8.64e+7));    
+        });
+      });
+      
+      
+    var trace = {
+      x: alertTimes,
+      type: "histogram",
+    };
+    var data = [trace];
+    var layout = {
+      title: {
+        text: "Timings of Task Completion Notifications"
+      },
+      xaxis: {
+          title: {
+              text: "Days Ago"
+          },
+          range: [Math.min(...alertTimes), 0]
+          
+      },
+      yaxis: {
+          title: {
+              text: "Number of Notifications"
+          }
+  
+      },
+      
+    };
+    Plotly.newPlot('alertHistogram', data,layout);
+
+}
