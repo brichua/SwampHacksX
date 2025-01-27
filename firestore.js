@@ -118,7 +118,7 @@ function getRandomColor() {
         return;
     }
 
-    const classImageUrl =null;
+    var classImageUrl =null;
 
     const className = classNameElement.value.trim();
     try{
