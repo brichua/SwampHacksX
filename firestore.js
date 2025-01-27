@@ -434,7 +434,7 @@ function getRandomColor() {
       if (userRole === 'student') {
         loadStudentProjectGroups(); // Reload the student's 
       } else {
-        loads(); // Reload teacher projects
+        loadClassData();
       }
       closeCreateGroupModal();
     } catch (error) {
