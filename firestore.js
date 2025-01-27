@@ -397,9 +397,9 @@ function getRandomColor() {
   // Create a new Project Group
   async function createProjectGroup() {
     console.log("Creating");
-    const groupName = document.getElementById('groupName').value.trim();
-    const classCode = document.getElementById('classCode').value.trim();
-    const className = document.getElementById('className').value.trim();
+    const groupName = document.getElementById('groupName').value;
+    const classCode = document.getElementById('classCode').textContent;
+    const className = document.getElementById('className').innerText;
   
     if (!groupName || (!classCode || !className)) {
       alert('Please enter all required information.');
